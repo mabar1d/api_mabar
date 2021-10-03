@@ -20,6 +20,7 @@ $router->group(['middleware' => 'auth', 'prefix' => 'api'], function ($router) {
     $router->post('logout', 'AuthController@logout');
     $router->post('refresh', 'AuthController@refresh');
     $router->get('profile', 'AuthController@userProfile');
+    $router->post('getListUser', 'UserController@getListUser');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
