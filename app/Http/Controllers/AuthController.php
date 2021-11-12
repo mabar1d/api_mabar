@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Personnel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use stdClass;
-use Validator;
+use Exception;
 
 
 class AuthController extends Controller
@@ -43,18 +45,25 @@ class AuthController extends Controller
             ]);
 
             if (!$validator->fails()) {
-                User::create(
+                $user = User::create(
                     [
                         'username' => $requestData['username'],
                         'email' => $requestData['email'],
                         'password' => Hash::make($requestData['password']),
                     ]
                 );
+                if ($user) {
+                    Personnel::create(
+                        [
+                            'user_id' => $user->id,
+                        ]
+                    );
+                }
                 $response->code = '00';
                 $response->desc = 'Register Success!';
             } else {
                 $response->code = '01';
-                $response->desc = $validator->errors();
+                $response->desc = $validator->errors()->first();
             }
             DB::commit();
         } catch (Exception $e) {
@@ -101,7 +110,7 @@ class AuthController extends Controller
                 }
             } else {
                 $response->code = '01';
-                $response->desc = $validator->errors();
+                $response->desc = $validator->errors()->first();
             }
             DB::commit();
         } catch (Exception $e) {
