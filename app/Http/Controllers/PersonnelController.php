@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Personnel;
+use App\Models\MasterReqJoinTeam;
+use App\Models\MasterTeam;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 use Illuminate\Support\Facades\Validator;
@@ -116,7 +118,7 @@ class PersonnelController extends Controller
         $response->desc = '';
         $requestData = $request->input();
         DB::beginTransaction();
-        try {;
+        try {
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
                 'firstname' => 'required|string',
@@ -173,7 +175,7 @@ class PersonnelController extends Controller
         $response->desc = '';
         $requestData = $request->input();
         DB::beginTransaction();
-        try {;
+        try {
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|numeric',
                 'team_id' => 'required|numeric',
@@ -189,6 +191,136 @@ class PersonnelController extends Controller
                         ->update($updateData);
                     $response->code = '00';
                     $response->desc = 'Update Team Personnel Success!';
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Personnel Not Found';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
+    public function personnelReqHost(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|numeric',
+            ]);
+            $userId = $requestData['user_id'];
+            if (!$validator->fails()) {
+                $findPersonnel = Personnel::where('user_id', $userId)->first();
+                if ($findPersonnel && empty($findPersonnel['team_id'])) {
+                    $updateData = array(
+                        'role' => '2',
+                    );
+                    Personnel::where('user_id', $userId)
+                        ->update($updateData);
+                    $response->code = '00';
+                    $response->desc = 'Personnel Change To Host Success!';
+                } else if ($findPersonnel && !empty($findPersonnel['team_id'])) {
+                    $response->code = '02';
+                    $response->desc = 'Personnel already join team. Please leave team first!';
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Personnel Not Found';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
+    public function personnelReqJoinTeam(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|numeric',
+                'team_id' => 'required|numeric',
+            ]);
+            $userId = trim($requestData['user_id']);
+            $teamId = trim($requestData['team_id']);
+            if (!$validator->fails()) {
+                $findPersonnel = Personnel::where('user_id', $userId)->first();
+                if ($findPersonnel && empty($findPersonnel['team_id'])) {
+                    $createData = array(
+                        'user_id' => $userId,
+                        'team_id' => $teamId,
+                        'answer' => NULL
+                    );
+                    MasterReqJoinTeam::updateOrCreate(['user_id' => $userId, 'team_id' => $teamId], $createData);
+                    $response->code = '00';
+                    $response->desc = 'Request Has Been Sent!';
+                } else if ($findPersonnel && !empty($findPersonnel['team_id'])) {
+                    $response->code = '02';
+                    $response->desc = 'Personnel already join team. Please leave team first!';
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Personnel Not Found';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
+    public function personnelLeaveTeam(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|numeric',
+            ]);
+            $userId = trim($requestData['user_id']);
+            if (!$validator->fails()) {
+                $findPersonnel = Personnel::where('user_id', $userId)->first();
+                if ($findPersonnel) {
+                    $getListPersonnelTeam = json_decode(MasterTeam::where('id', $findPersonnel['team_id'])->first()['personnel']);
+                    $removeListPersonnelTeam = array_diff($getListPersonnelTeam, [$userId]);
+                    MasterTeam::where('id', $findPersonnel['team_id'])
+                        ->update(array('personnel' => $removeListPersonnelTeam));
+                    $updateData = array(
+                        'team_id' => NULL
+                    );
+                    Personnel::where('user_id', $userId)
+                        ->update($updateData);
+                    $response->code = '00';
+                    $response->desc = 'Personnel Leave Team Success!';
                 } else {
                     $response->code = '02';
                     $response->desc = 'Personnel Not Found';

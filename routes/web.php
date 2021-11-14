@@ -25,11 +25,15 @@ $router->group(['middleware' => 'auth', 'prefix' => 'api'], function ($router) {
     $router->post('getListPersonnel', 'PersonnelController@getListPersonnel');
     $router->post('updateInfoPersonnel', 'PersonnelController@updateInfoPersonnel');
     $router->post('updateTeamPersonnel', 'PersonnelController@updateTeamPersonnel');
+    $router->post('personnelReqHost', 'PersonnelController@personnelReqHost');
+    $router->post('personnelReqJoinTeam', 'PersonnelController@personnelReqJoinTeam');
+    $router->post('personnelLeaveTeam', 'PersonnelController@personnelLeaveTeam');
     $router->post('createTeam', 'TeamController@create');
     $router->post('updateTeam', 'TeamController@update');
     $router->post('deleteTeam', 'TeamController@delete');
     $router->post('getListTeam', 'TeamController@getListTeam');
     $router->post('getInfoTeam', 'TeamController@getInfoTeam');
+    $router->post('answerReqJoinTeam', 'TeamController@answerReqJoinTeam');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {

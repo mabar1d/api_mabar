@@ -27,6 +27,7 @@ class CreatePersonnelTable extends Migration
             $table->string('zipcode', 5)->nullable();
             $table->string('team_id', 5)->nullable();
             $table->string('phone', 15)->nullable();
+            $table->tinyInteger('role', 2)->default(1)->nullable();
             $table->timestamps();
         });
     }
