@@ -208,7 +208,7 @@ class PersonnelController extends Controller
         return response()->json($response);
     }
 
-    public function personnelReqHost(Request $request)
+    public function personnelReqTeamLead(Request $request)
     {
         $response = new stdClass();
         $response->code = '';
@@ -225,6 +225,48 @@ class PersonnelController extends Controller
                 if ($findPersonnel && empty($findPersonnel['team_id'])) {
                     $updateData = array(
                         'role' => '2',
+                    );
+                    Personnel::where('user_id', $userId)
+                        ->update($updateData);
+                    $response->code = '00';
+                    $response->desc = 'Personnel Change To Host Success!';
+                } else if ($findPersonnel && !empty($findPersonnel['team_id'])) {
+                    $response->code = '02';
+                    $response->desc = 'Personnel already join team. Please leave team first!';
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Personnel Not Found';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
+    public function personnelReqHost(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|numeric',
+            ]);
+            $userId = $requestData['user_id'];
+            if (!$validator->fails()) {
+                $findPersonnel = Personnel::where('user_id', $userId)->first();
+                if ($findPersonnel && empty($findPersonnel['team_id'])) {
+                    $updateData = array(
+                        'role' => '3',
                     );
                     Personnel::where('user_id', $userId)
                         ->update($updateData);

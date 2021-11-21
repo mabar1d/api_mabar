@@ -31,7 +31,7 @@ class TeamController extends Controller
                 'user_id' => 'required|string',
                 'name' => 'required|string',
                 'info' => 'required|string',
-                'personnel' => 'required|string',
+                'personnel' => 'required|string'
             ]);
             $adminId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $teamName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
@@ -73,8 +73,8 @@ class TeamController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -130,8 +130,8 @@ class TeamController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -180,8 +180,8 @@ class TeamController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -196,14 +196,30 @@ class TeamController extends Controller
         try {
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
+                'search' => 'string',
+                'page' => 'numeric'
             ]);
+            $search = trim($requestData['search']);
+            $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
-                $getListTeam = MasterTeam::get();
-                if ($getListTeam) {
+                $limit = 20;
+                $offset = $page;
+                $query = MasterTeam::select('*');
+                if ($search) {
+                    $query->where('name', 'like', $search . '%');
+                }
+                $execQuery = $query->offset($offset)
+                    ->limit($limit)
+                    ->get();
+                if ($execQuery->first()) {
+                    $result = array();
+                    foreach ($execQuery->toArray() as $execQuery_row) {
+                        array_push($result, $execQuery_row);
+                    }
                     $response->code = '00';
                     $response->desc = 'Get List Team Success!';
-                    $response->data = $getListTeam;
+                    $response->data = $result;
                 } else {
                     $response->code = '02';
                     $response->desc = 'List Team is Empty.';
@@ -215,8 +231,8 @@ class TeamController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -252,8 +268,8 @@ class TeamController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -309,8 +325,8 @@ class TeamController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
