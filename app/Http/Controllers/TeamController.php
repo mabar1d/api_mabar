@@ -330,4 +330,58 @@ class TeamController extends Controller
         }
         return response()->json($response);
     }
+
+    public function uploadImage(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        DB::beginTransaction();
+        try {
+            $requestUser = auth()->user()->toArray();
+            $requestData = $request->only('image_file');
+            $validator = Validator::make($requestData, [
+                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
+            ]);
+            if (!$validator->fails()) {
+                $checkHasTeam = Personnel::select('team_id')
+                    ->where('user_id', $requestUser['id'])
+                    ->whereNotNull('team_id')
+                    ->first()->toArray();
+                if ($checkHasTeam) {
+                    if ($request->hasFile('image_file')) {
+                        $file = $request->file('image_file');
+                        $fileExtension = $file->getClientOriginalExtension();
+                        $filenameQuestion = 'image_team_' . $checkHasTeam['team_id'] . '.jpg';
+                        $destinationPath = 'app/public/upload/team/' . $checkHasTeam['team_id'];
+                        if (!file_exists(storage_path($destinationPath))) {
+                            mkdir(storage_path($destinationPath), 0775, true);
+                        }
+                        $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                        MasterTeam::where('id', $checkHasTeam['team_id'])
+                            ->update([
+                                "image" => $filenameQuestion
+                            ]);
+                        $response->code = '00';
+                        $response->desc = 'Upload Success.';
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Has no File Uploaded.';
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'User Not Join a Team.';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
 }

@@ -25,13 +25,16 @@ $router->group(['middleware' => 'auth', 'prefix' => 'api'], function ($router) {
     $router->post('getListPersonnel', 'PersonnelController@getListPersonnel');
     $router->post('updateInfoPersonnel', 'PersonnelController@updateInfoPersonnel');
     $router->post('updateTeamPersonnel', 'PersonnelController@updateTeamPersonnel');
+    $router->post('uploadImagePersonnel', 'PersonnelController@uploadImage');
     $router->post('personnelReqHost', 'PersonnelController@personnelReqHost');
     $router->post('personnelReqTeamLead', 'PersonnelController@personnelReqTeamLead');
     $router->post('personnelReqJoinTeam', 'PersonnelController@personnelReqJoinTeam');
     $router->post('personnelLeaveTeam', 'PersonnelController@personnelLeaveTeam');
+
     $router->post('createTeam', 'TeamController@create');
     $router->post('updateTeam', 'TeamController@update');
     $router->post('deleteTeam', 'TeamController@delete');
+    $router->post('uploadImageTeam', 'TeamController@uploadImage');
     $router->post('getListTeam', 'TeamController@getListTeam');
     $router->post('getInfoTeam', 'TeamController@getInfoTeam');
     $router->post('answerReqJoinTeam', 'TeamController@answerReqJoinTeam');
@@ -41,6 +44,7 @@ $router->group(['middleware' => 'auth', 'prefix' => 'api'], function ($router) {
     $router->post('deleteTournamet', 'TournamentController@delete');
     $router->post('getListTournament', 'TournamentController@getListTournament');
     $router->post('getInfoTournament', 'TournamentController@getInfoTournament');
+    $router->post('uploadImageTournament', 'TournamentController@uploadImage');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {

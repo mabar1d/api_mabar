@@ -289,4 +289,58 @@ class TournamentController extends Controller
         }
         return response()->json($response);
     }
+
+    public function uploadImage(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        DB::beginTransaction();
+        try {
+            $requestUser = auth()->user()->toArray();
+            $requestData = $request->toArray();
+            $validator = Validator::make($requestData, [
+                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
+                'tournament_id' => 'required|numeric',
+            ]);
+            if (!$validator->fails()) {
+                $checkTournament = MasterTournament::where('id', $requestData['tournament_id'])
+                    ->where('id_created_by', $requestUser['id'])
+                    ->first()->toArray();
+                if ($checkTournament) {
+                    if ($request->hasFile('image_file')) {
+                        $file = $request->file('image_file');
+                        $fileExtension = $file->getClientOriginalExtension();
+                        $filenameQuestion = 'image_tournament_' . $checkTournament['id'] . '.jpg';
+                        $destinationPath = 'app/public/upload/tournament/' . $checkTournament['id'];
+                        if (!file_exists(storage_path($destinationPath))) {
+                            mkdir(storage_path($destinationPath), 0775, true);
+                        }
+                        $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                        MasterTournament::where('id', $checkTournament['id'])
+                            ->update([
+                                "image" => $filenameQuestion
+                            ]);
+                        $response->code = '00';
+                        $response->desc = 'Upload Success.';
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Has no File Uploaded.';
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Tournament Not Found.';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
 }

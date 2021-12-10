@@ -36,11 +36,11 @@ class PersonnelController extends Controller
                 $query = Personnel::select('personnel.*', 'm_gender.gender')
                     ->leftJoin('m_gender', 'personnel.gender_id', '=', 'm_gender.gender_id')
                     ->where('user_id', $userId);
-                $execQuery = $query->get();
-                if ($execQuery->first()) {
+                $execQuery = $query->first();
+                if ($execQuery) {
                     $response->code = '00';
                     $response->desc = 'Get Personnel Success!';
-                    $response->data = $execQuery->first();
+                    $response->data = $execQuery;
                 } else {
                     $response->code = '02';
                     $response->desc = 'Personnel Not Found';
@@ -366,6 +366,58 @@ class PersonnelController extends Controller
                 } else {
                     $response->code = '02';
                     $response->desc = 'Personnel Not Found';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
+    public function uploadImage(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        DB::beginTransaction();
+        try {
+            $requestUser = auth()->user()->toArray();
+            $requestData = $request->only('image_file');
+            $validator = Validator::make($requestData, [
+                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
+            ]);
+            if (!$validator->fails()) {
+                $checkExist = Personnel::where('user_id', $requestUser['id'])
+                    ->first()->toArray();
+                if ($checkExist) {
+                    if ($request->hasFile('image_file')) {
+                        $file = $request->file('image_file');
+                        $fileExtension = $file->getClientOriginalExtension();
+                        $filenameQuestion = 'image_person_' . $checkExist['user_id'] . '.jpg';
+                        $destinationPath = 'app/public/upload/person/' . $checkExist['user_id'];
+                        if (!file_exists(storage_path($destinationPath))) {
+                            mkdir(storage_path($destinationPath), 0775, true);
+                        }
+                        $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                        Personnel::where('user_id', $checkExist['user_id'])
+                            ->update([
+                                "image" => $filenameQuestion
+                            ]);
+                        $response->code = '00';
+                        $response->desc = 'Upload Success.';
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Has no File Uploaded.';
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'User Not Join a Team.';
                 }
             } else {
                 $response->code = '01';
