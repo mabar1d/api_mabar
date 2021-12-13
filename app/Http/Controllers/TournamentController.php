@@ -30,7 +30,7 @@ class TournamentController extends Controller
                 'host_id' => 'required|string',
                 'name' => 'required|string',
                 'detail' => 'required|string',
-                'number_of_participants' => 'required|numeric',
+                'number_of_participants' => 'required|numeric|max:16',
                 'register_date_start' => 'required|string',
                 'register_date_end' => 'required|string',
                 'start_date' => 'required|string',
@@ -210,6 +210,7 @@ class TournamentController extends Controller
         $requestData = $request->input();
         DB::beginTransaction();
         try {
+            $requestUser = auth()->user()->toArray();
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
                 'search' => 'string',
@@ -217,7 +218,7 @@ class TournamentController extends Controller
             ]);
             $search = trim($requestData['search']);
             $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
-            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $userId = isset($requestUser['id']) ? trim($requestUser['id']) : NULL;
             if (!$validator->fails()) {
                 $limit = 20;
                 $offset = $page;
@@ -231,6 +232,8 @@ class TournamentController extends Controller
                 if ($execQuery->first()) {
                     $result = array();
                     foreach ($execQuery->toArray() as $execQuery_row) {
+                        $getPersonnel = Personnel::where('user_id', $execQuery_row['id_created_by'])->first();
+                        $execQuery_row['created_name'] = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
                         array_push($result, $execQuery_row);
                     }
                     $response->code = '00';
@@ -261,15 +264,17 @@ class TournamentController extends Controller
         $requestData = $request->input();
         DB::beginTransaction();
         try {
+            $requestUser = auth()->user()->toArray();
             $validator = Validator::make($requestData, [
-                'user_id' => 'required|string',
                 'tournament_id' => 'required|string',
             ]);
-            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $userId = isset($requestUser['id']) ? trim($requestUser['id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
             if (!$validator->fails()) {
-                $getInfoTournament = MasterTournament::where('id', $tournamentId)->first();
+                $getInfoTournament = MasterTournament::where('id', $tournamentId)->first()->toArray();
                 if ($getInfoTournament) {
+                    $getPersonnel = Personnel::where('user_id', $getInfoTournament['id_created_by'])->first();
+                    $getInfoTournament['created_name'] = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
                     $response->code = '00';
                     $response->desc = 'Get Info Tournament Success!';
                     $response->data = $getInfoTournament;
