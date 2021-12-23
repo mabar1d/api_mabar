@@ -27,7 +27,9 @@ class PersonnelController extends Controller
         $requestData = $request->input();
         DB::beginTransaction();
         try {
-            // dd($requestData);
+            if (isset($request->newToken) && $request->newToken) {
+                $response->newToken = $request->newToken;
+            }
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|numeric'
             ]);

@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use stdClass;
 use Exception;
-
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -98,7 +99,7 @@ class AuthController extends Controller
                     $responseData = array(
                         'access_token' => $token,
                         'token_type' => 'bearer',
-                        'expires_in' => auth()->factory()->getTTL() * 60,
+                        'expires_in' => auth()->factory()->getTTL() . ' minute',
                         'user' => auth()->user()
                     );
                     $response->code = '00';
@@ -153,15 +154,19 @@ class AuthController extends Controller
         $response->code = '';
         $response->desc = '';
         try {
+            $token = JWTAuth::getToken();
+            $newToken = JWTAuth::refresh($token);
             $responseData = array(
-                'access_token' => auth()->refresh(),
+                'access_token' => $newToken,
                 'token_type' => 'bearer',
-                'expires_in' => auth()->factory()->getTTL() * 60,
-                'user' => auth()->user()
+                'expires_in' => auth()->factory()->getTTL() . ' minute'
             );
             $response->code = '00';
             $response->desc = 'Refresh Token Success!';
             $response->data = $responseData;
+        } catch (TokenExpiredException $e) {
+            $response->code = '05';
+            $response->desc = 'Refresh Token expired, please relogin.';
         } catch (Exception $e) {
             $response->responseCode = '99';
             $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
