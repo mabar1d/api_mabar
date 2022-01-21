@@ -50,8 +50,8 @@ class Authenticate
             $expired = true;
         } catch (JWTException $e) {
             return response(array(
-                'responseCode' => '05',
-                'responseDesc' => 'Token Not Valid, please relogin.'
+                'code' => '05',
+                'desc' => 'Token Not Valid, please relogin.'
             ), 401);
         }
         if ($expired) {
@@ -59,13 +59,13 @@ class Authenticate
                 JWTAuth::refresh();
             } catch (TokenExpiredException $e) {
                 return response(array(
-                    'responseCode' => '05',
-                    'responseDesc' => 'Token expired, please relogin.'
+                    'code' => '05',
+                    'desc' => 'Token expired, please relogin.'
                 ), 401);
             } catch (JWTException $e) {
                 return response(array(
-                    'responseCode' => '05',
-                    'responseDesc' => 'Token Not Valid, please relogin.'
+                    'code' => '05',
+                    'desc' => 'Token Not Valid, please relogin.'
                 ), 401);
             }
             // send the refreshed token back to the client

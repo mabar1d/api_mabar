@@ -69,8 +69,8 @@ class AuthController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -116,8 +116,8 @@ class AuthController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -137,8 +137,8 @@ class AuthController extends Controller
             $response->code = '00';
             $response->desc = 'Logout Success!';
         } catch (Exception $e) {
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -168,8 +168,8 @@ class AuthController extends Controller
             $response->code = '05';
             $response->desc = 'Refresh Token expired, please relogin.';
         } catch (Exception $e) {
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
@@ -190,8 +190,8 @@ class AuthController extends Controller
             $response->desc = 'Get User Profile Success!';
             $response->data = $responseData;
         } catch (Exception $e) {
-            $response->responseCode = '99';
-            $response->responseDesc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         return response()->json($response);
     }
