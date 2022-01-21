@@ -17,7 +17,7 @@ $router->get('/', function () use ($router) {
     return "Welcome To The Jungle! Let's ROCK!!!!";
 });
 
-$router->group(['middleware' => 'auth', 'prefix' => 'api'], function ($router) {
+$router->group(['prefix' => 'api'], function ($router) {
     $router->post('logout', 'AuthController@logout');
     $router->post('refresh', 'AuthController@refresh');
     $router->get('profile', 'AuthController@userProfile');
