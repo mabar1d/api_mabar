@@ -52,7 +52,7 @@ class Authenticate
             return response(array(
                 'code' => '05',
                 'desc' => 'Token Not Valid, please relogin.'
-            ), 401);
+            ), 200);
         }
         if ($expired) {
             try {
@@ -61,12 +61,12 @@ class Authenticate
                 return response(array(
                     'code' => '05',
                     'desc' => 'Token expired, please relogin.'
-                ), 401);
+                ), 200);
             } catch (JWTException $e) {
                 return response(array(
                     'code' => '05',
                     'desc' => 'Token Not Valid, please relogin.'
-                ), 401);
+                ), 200);
             }
             // send the refreshed token back to the client
         }

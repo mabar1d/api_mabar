@@ -42,6 +42,9 @@ class PersonnelController extends Controller
                     ->leftJoin('m_gender', 'personnel.gender_id', '=', 'm_gender.gender_id')
                     ->where('user_id', $userId);
                 $execQuery = $query->first();
+                if (isset($execQuery->birthdate) && $execQuery->birthdate) {
+                    $execQuery->birthdate = date("d-m-Y", strtotime($execQuery->birthdate));
+                }
                 if ($execQuery) {
                     $response->code = '00';
                     $response->desc = 'Get Personnel Success!';
@@ -128,9 +131,9 @@ class PersonnelController extends Controller
                 'user_id' => 'required|string',
                 'firstname' => 'required|string',
                 'gender_id' => 'required|numeric',
-                'sub_district_id' => 'required|numeric',
-                'district_id' => 'required|numeric',
-                'province_id' => 'required|numeric',
+                // 'sub_district_id' => 'required|numeric',
+                // 'district_id' => 'required|numeric',
+                // 'province_id' => 'required|numeric',
                 'zipcode' => 'required|numeric|digits:5',
                 'birthdate' => 'string|date|date_format:"d-m-Y"',
                 'phone' => 'numeric|digits_between:10,13'
@@ -392,13 +395,13 @@ class PersonnelController extends Controller
         $response->desc = '';
         DB::beginTransaction();
         try {
-            $requestUser = auth()->user()->toArray();
-            $requestData = $request->only('image_file');
+            $requestData = $request->all();
             $validator = Validator::make($requestData, [
-                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
+                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:2048',
+                'user_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
-                $checkExist = Personnel::where('user_id', $requestUser['id'])
+                $checkExist = Personnel::where('user_id', $requestData['user_id'])
                     ->first()->toArray();
                 if ($checkExist) {
                     if ($request->hasFile('image_file')) {

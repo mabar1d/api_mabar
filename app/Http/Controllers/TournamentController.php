@@ -213,7 +213,7 @@ class TournamentController extends Controller
         $requestData = $request->input();
         DB::beginTransaction();
         try {
-            $requestUser = auth()->user()->toArray();
+            // $requestUser = auth()->user()->toArray();
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
                 'search' => 'string',
@@ -221,7 +221,7 @@ class TournamentController extends Controller
             ]);
             $search = trim($requestData['search']);
             $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
-            $userId = isset($requestUser['id']) ? trim($requestUser['id']) : NULL;
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
                 $limit = 20;
                 $offset = $page;
@@ -267,11 +267,11 @@ class TournamentController extends Controller
         $requestData = $request->input();
         DB::beginTransaction();
         try {
-            $requestUser = auth()->user()->toArray();
+            // $requestUser = auth()->user()->toArray();
             $validator = Validator::make($requestData, [
                 'tournament_id' => 'required|string',
             ]);
-            $userId = isset($requestUser['id']) ? trim($requestUser['id']) : NULL;
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
             if (!$validator->fails()) {
                 $getInfoTournament = MasterTournament::where('id', $tournamentId)->first()->toArray();
@@ -305,15 +305,15 @@ class TournamentController extends Controller
         $response->desc = '';
         DB::beginTransaction();
         try {
-            $requestUser = auth()->user()->toArray();
             $requestData = $request->toArray();
             $validator = Validator::make($requestData, [
                 'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
                 'tournament_id' => 'required|numeric',
+                'user_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
                 $checkTournament = MasterTournament::where('id', $requestData['tournament_id'])
-                    ->where('id_created_by', $requestUser['id'])
+                    ->where('id_created_by', $requestData['user_id'])
                     ->first()->toArray();
                 if ($checkTournament) {
                     if ($request->hasFile('image_file')) {
