@@ -341,14 +341,14 @@ class TeamController extends Controller
         $response->desc = '';
         DB::beginTransaction();
         try {
-            $requestUser = auth()->user()->toArray();
-            $requestData = $request->only('image_file');
+            $requestData = $request->all();
             $validator = Validator::make($requestData, [
                 'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
+                'user_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
                 $checkHasTeam = Personnel::select('team_id')
-                    ->where('user_id', $requestUser['id'])
+                    ->where('user_id', $requestData['user_id'])
                     ->whereNotNull('team_id')
                     ->first()->toArray();
                 if ($checkHasTeam) {
