@@ -45,6 +45,13 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('getListTournament', 'TournamentController@getListTournament');
     $router->post('getInfoTournament', 'TournamentController@getInfoTournament');
     $router->post('uploadImageTournament', 'TournamentController@uploadImage');
+
+    $router->post('createGame', 'GameController@create');
+    $router->post('updateMasterGame', 'GameController@update');
+    $router->post('deleteMasterGame', 'GameController@delete');
+    $router->post('getListMasterGame', 'GameController@getList');
+    $router->post('getInfoMasterGame', 'GameController@getInfo');
+    $router->post('uploadImageGame', 'GameController@uploadImage');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
