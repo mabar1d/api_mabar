@@ -54,6 +54,8 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('uploadImageGame', 'GameController@uploadImage');
 });
 
+$router->get('/image/master_game/{id}/{image_id}', 'ImageController@showImageGame');
+
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('register', 'AuthController@register');
     $router->post('login', 'AuthController@login');
