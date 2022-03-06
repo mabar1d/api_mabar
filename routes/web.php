@@ -42,6 +42,7 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('createTournament', 'TournamentController@create');
     $router->post('updateTournament', 'TournamentController@update');
     $router->post('deleteTournamet', 'TournamentController@delete');
+    $router->post('registerTournament', 'TournamentController@registerTournament');
     $router->post('getListTournament', 'TournamentController@getListTournament');
     $router->post('getInfoTournament', 'TournamentController@getInfoTournament');
     $router->post('uploadImageTournament', 'TournamentController@uploadImage');

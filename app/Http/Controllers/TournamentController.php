@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MasterGame;
 use Illuminate\Http\Request;
 use App\Models\MasterTournament;
 use App\Models\Personnel;
+use App\Models\TeamTournament;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 use Illuminate\Support\Facades\Validator;
@@ -38,7 +40,8 @@ class TournamentController extends Controller
                 'register_date_end' => 'required|string',
                 'start_date' => 'required|string',
                 'end_date' => 'required|string',
-                'prize' => 'required|string'
+                'prize' => 'required|string',
+                'game_id' => 'required|string',
             ]);
             $hostId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
@@ -58,7 +61,8 @@ class TournamentController extends Controller
                             'register_date_end' => date('Y-m-d', strtotime(trim($requestData['register_date_end']))),
                             'detail' => json_encode($requestData['detail']),
                             'number_of_participants' => $requestData['number_of_participants'],
-                            'prize' => json_encode($requestData['prize'])
+                            'prize' => $requestData['prize'],
+                            'game_id' => $requestData['game_id']
                         );
                         MasterTournament::create($insertData);
                         $response->code = '00';
@@ -102,7 +106,8 @@ class TournamentController extends Controller
                 'register_date_end' => 'required|string',
                 'start_date' => 'required|string',
                 'end_date' => 'required|string',
-                'prize' => 'required|string'
+                'prize' => 'required|string',
+                'game_id' => 'required|string'
             ]);
             $hostId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
@@ -124,7 +129,8 @@ class TournamentController extends Controller
                                 'register_date_end' => date('Y-m-d', strtotime(trim($requestData['register_date_end']))),
                                 'detail' => json_encode($requestData['detail']),
                                 'number_of_participants' => $requestData['number_of_participants'],
-                                'prize' => json_encode($requestData['prize'])
+                                'prize' => $requestData['prize'],
+                                'game_id' => $requestData['game_id']
                             );
                             MasterTournament::where('id', $tournamentId)
                                 ->update($updateData);
@@ -178,6 +184,10 @@ class TournamentController extends Controller
                     if ($checkTournamentExist) {
                         if ($checkTournamentExist->id_created_by == $hostId) {
                             MasterTournament::where('id', $tournamentId)->delete();
+                            $destinationPath = 'app/public/upload/tournament/' . $checkTournamentExist->id . '/' . $checkTournamentExist->image;
+                            if (file_exists(storage_path($destinationPath))) {
+                                unlink(storage_path($destinationPath));
+                            }
                             $response->code = '00';
                             $response->desc = 'Delete Tournament Success!';
                         } else {
@@ -205,6 +215,78 @@ class TournamentController extends Controller
         return response()->json($response);
     }
 
+    public function registerTournament(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            // $requestUser = auth()->user()->toArray();
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|numeric',
+                'tournament_id' => 'required|string',
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            if (!$validator->fails()) {
+                $getPersonnel = Personnel::where('user_id', $userId)->first();
+                if ($getPersonnel) {
+                    if (isset($getPersonnel->team_id) && $getPersonnel->team_id) {
+                        $getInfoTournament = MasterTournament::where('id', $tournamentId)->first();
+                        if ($getInfoTournament) {
+                            if ((strtotime("now") >= strtotime($getInfoTournament->register_date_start)) && (strtotime("now") <= strtotime($getInfoTournament->register_date_end))) {
+                                $checkQuotaTournament = TeamTournament::where('tournament_id', $getInfoTournament->id)
+                                    ->where('active', '1')
+                                    ->count();
+                                if ($checkQuotaTournament <= $getInfoTournament->number_of_participants) {
+                                    $insertData = array(
+                                        'team_id' => $getPersonnel->team_id,
+                                        'tournament_id' => $tournamentId,
+                                        'active' => '1',
+                                        'created_by' => $userId,
+                                    );;
+                                    if (TeamTournament::firstOrCreate($insertData)->wasRecentlyCreated) {
+                                        $response->code = '00';
+                                        $response->desc = 'Register Tournament Success!';
+                                    } else {
+                                        $response->code = '01';
+                                        $response->desc = 'Team is Registered on this Tournament.';
+                                    }
+                                } else {
+                                    $response->code = '02';
+                                    $response->desc = 'Quota Tournament is Full.';
+                                }
+                            } else {
+                                $response->code = '02';
+                                $response->desc = 'Register Tournament Closed.';
+                            }
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Tournament Not Found.';
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Personnel Not Have Team.';
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Personnel Not Found.';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
     public function getListTournament(Request $request)
     {
         $response = new stdClass();
@@ -217,7 +299,9 @@ class TournamentController extends Controller
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
                 'search' => 'string',
-                'page' => 'numeric'
+                'page' => 'numeric',
+                'filter_game' => 'array', 'min:1',
+                'filter_game.*' => 'string', 'distinct', 'min:1'
             ]);
             $search = trim($requestData['search']);
             $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
@@ -226,6 +310,9 @@ class TournamentController extends Controller
                 $limit = 20;
                 $offset = $page;
                 $query = MasterTournament::select('*');
+                if (isset($requestData['filter_game']) && $requestData['filter_game']) {
+                    $query->whereIn('game_id', $requestData['filter_game']);
+                }
                 if ($search) {
                     $query->where('name', 'like', $search . '%');
                 }
@@ -237,6 +324,12 @@ class TournamentController extends Controller
                     foreach ($execQuery->toArray() as $execQuery_row) {
                         $getPersonnel = Personnel::where('user_id', $execQuery_row['id_created_by'])->first();
                         $execQuery_row['image'] = URL::to("/image/masterTournament/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                        $title_game = NULL;
+                        if (isset($execQuery_row['game_id']) && $execQuery_row['game_id']) {
+                            $getMasterGame = MasterGame::where('id', $execQuery_row['game_id'])->first();
+                            $title_game = $getMasterGame->title;
+                        }
+                        $execQuery_row['title_game'] = $title_game;
                         $execQuery_row['created_name'] = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
                         array_push($result, $execQuery_row);
                     }
