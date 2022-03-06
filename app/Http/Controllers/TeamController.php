@@ -218,7 +218,9 @@ class TeamController extends Controller
                 if ($execQuery->first()) {
                     $result = array();
                     foreach ($execQuery->toArray() as $execQuery_row) {
-                        $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                        if ($execQuery_row['image']) {
+                            $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                        }
                         array_push($result, $execQuery_row);
                     }
                     $response->code = '00';
@@ -258,7 +260,9 @@ class TeamController extends Controller
             if (!$validator->fails()) {
                 $getInfoTeam = MasterTeam::where('id', $teamId)->first();
                 if ($getInfoTeam) {
-                    $getInfoTeam->image = URL::to("/image/masterTeam/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']);
+                    if ($getInfoTeam->image) {
+                        $getInfoTeam->image = URL::to("/image/masterTeam/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']);
+                    }
                     $response->code = '00';
                     $response->desc = 'Get Info Team Success!';
                     $response->data = $getInfoTeam;

@@ -172,7 +172,9 @@ class GameController extends Controller
                 if ($execQuery->first()) {
                     $result = array();
                     foreach ($execQuery->toArray() as $execQuery_row) {
-                        $execQuery_row['image'] = URL::to("/image/masterGame/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                        if ($execQuery_row['image']) {
+                            $execQuery_row['image'] = URL::to("/image/masterGame/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                        }
                         array_push($result, $execQuery_row);
                     }
                     $response->code = '00';
@@ -214,7 +216,9 @@ class GameController extends Controller
                 if ($getInfoMasterGame) {
                     $response->code = '00';
                     $response->desc = 'Get Info Master Game Success!';
-                    $getInfoMasterGame->image = URL::to("/image/masterGame/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
+                    if ($getInfoMasterGame->image) {
+                        $getInfoMasterGame->image = URL::to("/image/masterGame/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
+                    }
                     $response->data = $getInfoMasterGame;
                 } else {
                     $response->code = '02';

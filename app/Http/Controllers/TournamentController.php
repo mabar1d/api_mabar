@@ -323,7 +323,9 @@ class TournamentController extends Controller
                     $result = array();
                     foreach ($execQuery->toArray() as $execQuery_row) {
                         $getPersonnel = Personnel::where('user_id', $execQuery_row['id_created_by'])->first();
-                        $execQuery_row['image'] = URL::to("/image/masterTournament/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                        if ($execQuery_row['image']) {
+                            $execQuery_row['image'] = URL::to("/image/masterTournament/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                        }
                         $title_game = NULL;
                         if (isset($execQuery_row['game_id']) && $execQuery_row['game_id']) {
                             $getMasterGame = MasterGame::where('id', $execQuery_row['game_id'])->first();
