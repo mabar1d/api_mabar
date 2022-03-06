@@ -54,7 +54,12 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('uploadImageGame', 'GameController@uploadImage');
 });
 
-$router->get('/image/master_game/{id}/{image_id}', 'ImageController@showImageGame');
+$router->group(['prefix' => 'image'], function ($router) {
+    $router->get('masterGame/{id}/{image_id}', 'ImageController@showImageGame');
+    $router->get('masterTeam/{id}/{image_id}', 'ImageController@showImageTeam');
+    $router->get('masterTournament/{id}/{image_id}', 'ImageController@showImageTournament');
+});
+
 
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('register', 'AuthController@register');

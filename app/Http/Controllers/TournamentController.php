@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use stdClass;
 use Illuminate\Support\Facades\Validator;
 use Exception;
-
+use Illuminate\Support\Facades\URL;
 
 class TournamentController extends Controller
 {
@@ -236,6 +236,7 @@ class TournamentController extends Controller
                     $result = array();
                     foreach ($execQuery->toArray() as $execQuery_row) {
                         $getPersonnel = Personnel::where('user_id', $execQuery_row['id_created_by'])->first();
+                        $execQuery_row['image'] = URL::to("/image/masterTournament/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
                         $execQuery_row['created_name'] = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
                         array_push($result, $execQuery_row);
                     }
@@ -274,12 +275,13 @@ class TournamentController extends Controller
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
             if (!$validator->fails()) {
-                $getInfoTournament = MasterTournament::where('id', $tournamentId)->first()->toArray();
+                $getInfoTournament = MasterTournament::where('id', $tournamentId)->first();
                 if ($getInfoTournament) {
-                    $getPersonnel = Personnel::where('user_id', $getInfoTournament['id_created_by'])->first();
+                    $getPersonnel = Personnel::where('user_id', $getInfoTournament->id_created_by)->first();
                     $getInfoTournament['created_name'] = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
                     $response->code = '00';
                     $response->desc = 'Get Info Tournament Success!';
+                    $getInfoTournament->image = URL::to("/image/masterTournament/" . $getInfoTournament->id . "/" . $getInfoTournament->image);
                     $response->data = $getInfoTournament;
                 } else {
                     $response->code = '02';
