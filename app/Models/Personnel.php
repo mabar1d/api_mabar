@@ -23,6 +23,9 @@ class Personnel extends Model
         'zipcode',
         'team_id',
         'phone',
+        'role',
+        'is_verified',
+        'image'
     ];
     protected $hidden = array('id', 'created_at', 'updated_at');
 }

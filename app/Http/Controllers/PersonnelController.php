@@ -151,6 +151,7 @@ class PersonnelController extends Controller
                         'province_id' => isset($requestData['province_id']) ? trim($requestData['province_id']) : NULL,
                         'zipcode' => isset($requestData['zipcode']) ? trim($requestData['zipcode']) : NULL,
                         'phone' => isset($requestData['phone']) ? trim($requestData['phone']) : NULL,
+                        'is_verified' => '1' //hardcode setelah update data pasti menjadi verified user
                     );
                     if (isset($requestData['birthdate']) && $requestData['birthdate']) {
                         $updateData['birthdate'] = date('Y-m-d', strtotime(trim($requestData['birthdate'])));
