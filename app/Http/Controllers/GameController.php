@@ -173,7 +173,7 @@ class GameController extends Controller
                     $result = array();
                     foreach ($execQuery->toArray() as $execQuery_row) {
                         if ($execQuery_row['image']) {
-                            $execQuery_row['image'] = URL::to("/image/masterGame/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                            $execQuery_row['image'] = URL::to("/image/master_game/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
                         }
                         array_push($result, $execQuery_row);
                     }

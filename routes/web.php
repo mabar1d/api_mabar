@@ -56,6 +56,7 @@ $router->group(['prefix' => 'api'], function ($router) {
 });
 
 $router->group(['prefix' => 'image'], function ($router) {
+    $router->get('personnel/{id}/{image_id}', 'ImageController@showImagePersonnel');
     $router->get('masterGame/{id}/{image_id}', 'ImageController@showImageGame');
     $router->get('masterTeam/{id}/{image_id}', 'ImageController@showImageTeam');
     $router->get('masterTournament/{id}/{image_id}', 'ImageController@showImageTournament');

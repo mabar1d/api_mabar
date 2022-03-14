@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use stdClass;
 use Illuminate\Support\Facades\Validator;
 use Exception;
-
+use Illuminate\Support\Facades\URL;
 
 class PersonnelController extends Controller
 {
@@ -44,6 +44,9 @@ class PersonnelController extends Controller
                 $execQuery = $query->first();
                 if (isset($execQuery->birthdate) && $execQuery->birthdate) {
                     $execQuery->birthdate = date("d-m-Y", strtotime($execQuery->birthdate));
+                }
+                if (isset($execQuery->image) && $execQuery->image) {
+                    $execQuery->image = URL::to("/image/personnel/" . $execQuery->user_id . "/" . $execQuery->image);
                 }
                 if ($execQuery) {
                     $response->code = '00';
@@ -97,6 +100,9 @@ class PersonnelController extends Controller
                     $result = array();
                     foreach ($execQuery->toArray() as $execQuery_row) {
                         $execQuery_row['birthdate'] = !empty($execQuery_row['birthdate']) ? date('d-m-Y', strtotime(trim($execQuery_row['birthdate']))) : NULL;
+                        if (isset($execQuery_row['image']) && $execQuery_row['image']) {
+                            $execQuery_row['image'] = URL::to("/image/personnel/" . $execQuery_row['user_id'] . "/" . $execQuery_row['image']);
+                        }
                         array_push($result, $execQuery_row);
                     }
                     $response->code = '00';
@@ -406,10 +412,8 @@ class PersonnelController extends Controller
                     ->first()->toArray();
                 if ($checkExist) {
                     if ($request->hasFile('image_file')) {
-                        $file = $request->file('image_file');
-                        $fileExtension = $file->getClientOriginalExtension();
                         $filenameQuestion = 'image_person_' . $checkExist['user_id'] . '.jpg';
-                        $destinationPath = 'app/public/upload/person/' . $checkExist['user_id'];
+                        $destinationPath = 'app/public/upload/personnel/' . $checkExist['user_id'];
                         if (!file_exists(storage_path($destinationPath))) {
                             mkdir(storage_path($destinationPath), 0775, true);
                         }
@@ -426,7 +430,7 @@ class PersonnelController extends Controller
                     }
                 } else {
                     $response->code = '02';
-                    $response->desc = 'User Not Join a Team.';
+                    $response->desc = 'User Not Found.';
                 }
             } else {
                 $response->code = '01';
