@@ -86,15 +86,17 @@ class PersonnelController extends Controller
             $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
             if (!$validator->fails()) {
                 $limit = 20;
-                $offset = $page;
                 $query = Personnel::select('personnel.*', 'm_gender.gender')
                     ->leftJoin('m_gender', 'personnel.gender_id', '=', 'm_gender.gender_id');
                 if ($search) {
                     $query->where('firstname', 'like', $search . '%')
                         ->orWhere('lastname', 'like', $search . '%');
                 }
-                $execQuery = $query->offset($offset)
-                    ->limit($limit)
+                if ($page > 1) {
+                    $offset = ($page - 1) * $limit;
+                    $query->offset($offset);
+                }
+                $execQuery = $query->limit($limit)
                     ->get();
                 if ($execQuery->first()) {
                     $result = array();

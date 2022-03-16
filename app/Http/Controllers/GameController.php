@@ -161,13 +161,15 @@ class GameController extends Controller
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
                 $limit = 20;
-                $offset = $page;
                 $query = MasterGame::select('*');
                 if ($search) {
                     $query->where('title', 'like', $search . '%');
                 }
-                $execQuery = $query->offset($offset)
-                    ->limit($limit)
+                if ($page > 1) {
+                    $offset = ($page - 1) * $limit;
+                    $query->offset($offset);
+                }
+                $execQuery = $query->limit($limit)
                     ->get();
                 if ($execQuery->first()) {
                     $result = array();

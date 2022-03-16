@@ -209,17 +209,19 @@ class TeamController extends Controller
             ]);
             if (!$validator->fails()) {
                 $search = trim($requestData['search']);
-                $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
+                $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
                 $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
 
                 $limit = 20;
-                $offset = $page;
                 $query = MasterTeam::select('*');
                 if ($search) {
                     $query->where('name', 'like', $search . '%');
                 }
-                $execQuery = $query->offset($offset)
-                    ->limit($limit)
+                if ($page > 1) {
+                    $offset = ($page - 1) * $limit;
+                    $query->offset($offset);
+                }
+                $execQuery = $query->limit($limit)
                     ->get();
                 if ($execQuery->first()) {
                     $result = array();

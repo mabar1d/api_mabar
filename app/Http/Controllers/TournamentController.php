@@ -307,13 +307,12 @@ class TournamentController extends Controller
                 'filter_game' => 'required|string', 'min:2'
             ]);
             $search = trim($requestData['search']);
-            $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
+            $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
                 $filter_game = json_decode($requestData['filter_game'], true);
                 if ($filter_game || empty($filter_game)) {
                     $limit = 20;
-                    $offset = $page;
                     $query = MasterTournament::select('*');
                     if (isset($filter_game) && $filter_game) {
                         $query->whereIn('game_id', $filter_game);
@@ -321,8 +320,11 @@ class TournamentController extends Controller
                     if ($search) {
                         $query->where('name', 'like', $search . '%');
                     }
-                    $execQuery = $query->offset($offset)
-                        ->limit($limit)
+                    if ($page > 1) {
+                        $offset = ($page - 1) * $limit;
+                        $query->offset($offset);
+                    }
+                    $execQuery = $query->limit($limit)
                         ->get();
                     if ($execQuery->first()) {
                         $result = array();
