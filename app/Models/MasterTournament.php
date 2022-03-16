@@ -20,7 +20,8 @@ class MasterTournament extends Model
         'register_date_start',
         'register_date_end',
         'prize',
-        'game_id'
+        'game_id',
+        'type'
     ];
     protected $hidden = array('created_at', 'updated_at');
 }

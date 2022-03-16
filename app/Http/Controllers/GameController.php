@@ -120,7 +120,7 @@ class GameController extends Controller
                 $checkMasterGameExist = MasterGame::where('id', $gameId)->first();
                 if ($checkMasterGameExist) {
                     // MasterGame::where('id', $gameId)->delete();
-                    $destinationPath = 'app/public/upload/master_game/' . $gameId . '/' . $checkMasterGameExist->image;
+                    $destinationPath = 'app/public/upload/masterGame/' . $gameId . '/' . $checkMasterGameExist->image;
                     if (file_exists(storage_path($destinationPath))) {
                         unlink(storage_path($destinationPath));
                     }
@@ -173,7 +173,7 @@ class GameController extends Controller
                     $result = array();
                     foreach ($execQuery->toArray() as $execQuery_row) {
                         if ($execQuery_row['image']) {
-                            $execQuery_row['image'] = URL::to("/image/master_game/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                            $execQuery_row['image'] = URL::to("/image/masterGame/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
                         }
                         array_push($result, $execQuery_row);
                     }
@@ -256,7 +256,7 @@ class GameController extends Controller
                     // $file = $request->file('image_file');
                     // $fileExtension = $file->getClientOriginalExtension();
                     $filenameQuestion = 'master_game_' . $gameId . '.jpg';
-                    $destinationPath = 'app/public/upload/master_game/' . $gameId;
+                    $destinationPath = 'app/public/upload/masterGame/' . $gameId;
                     if (!file_exists(storage_path($destinationPath))) {
                         mkdir(storage_path($destinationPath), 0775, true);
                     }
