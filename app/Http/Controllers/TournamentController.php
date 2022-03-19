@@ -6,6 +6,7 @@ use App\Models\MasterGame;
 use Illuminate\Http\Request;
 use App\Models\MasterTournament;
 use App\Models\Personnel;
+use App\Models\RatingTournament;
 use App\Models\TeamTournament;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -330,6 +331,14 @@ class TournamentController extends Controller
                         $result = array();
                         foreach ($execQuery->toArray() as $execQuery_row) {
                             $getPersonnel = Personnel::where('user_id', $execQuery_row['id_created_by'])->first();
+                            $getRatingTournament = RatingTournament::selectRaw('count(*) as total_rater, sum(rating) as total_rating')
+                                ->where('id_tournament', $execQuery_row['id'])
+                                ->groupBy('id_tournament')
+                                ->first();
+                            $ratingTournament = 0;
+                            if ($getRatingTournament) {
+                                $ratingTournament = round($getRatingTournament->total_rating / $getRatingTournament->total_rater);
+                            }
                             if ($execQuery_row['image']) {
                                 $execQuery_row['image'] = URL::to("/image/masterTournament/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
                             }
@@ -340,6 +349,7 @@ class TournamentController extends Controller
                             }
                             $execQuery_row['title_game'] = $title_game;
                             $execQuery_row['created_name'] = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
+                            $execQuery_row['rating'] = $ratingTournament;
                             array_push($result, $execQuery_row);
                         }
                         $response->code = '00';
@@ -383,12 +393,47 @@ class TournamentController extends Controller
             if (!$validator->fails()) {
                 $getInfoTournament = MasterTournament::where('id', $tournamentId)->first();
                 if ($getInfoTournament) {
+                    $getRatingTournament = RatingTournament::selectRaw('count(*) as total_rater, sum(rating) as total_rating')
+                        ->where('id_tournament', $getInfoTournament->id)
+                        ->groupBy('id_tournament')
+                        ->first();
+                    $ratingTournament = 0;
+                    if ($getRatingTournament) {
+                        $ratingTournament = round($getRatingTournament->total_rating / $getRatingTournament->total_rater);
+                    }
+                    if ($getInfoTournament->image) {
+                        $image = URL::to("/image/masterTournament/" . $getInfoTournament->id . "/" . $getInfoTournament->image);
+                    }
+                    $title_game = NULL;
+                    if (isset($getInfoTournament->game_id) && $getInfoTournament->game_id) {
+                        $getMasterGame = MasterGame::where('id', $getInfoTournament->game_id)->first();
+                        $title_game = $getMasterGame->title;
+                    }
                     $getPersonnel = Personnel::where('user_id', $getInfoTournament->id_created_by)->first();
-                    $getInfoTournament['created_name'] = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
+                    if ($getPersonnel) {
+                        $created_name = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
+                    }
+
+                    $data = new stdClass;
+                    $data->id = isset($getInfoTournament->id) && $getInfoTournament->id ? trim($getInfoTournament->id) : NULL;
+                    $data->name = isset($getInfoTournament->name) && $getInfoTournament->name ? trim($getInfoTournament->name) : NULL;
+                    $data->id_created_by = isset($getInfoTournament->id_created_by) && $getInfoTournament->id_created_by ? trim($getInfoTournament->id_created_by) : NULL;
+                    $data->created_name = isset($created_name) && $created_name ? trim($created_name) : NULL;
+                    $data->start_date = isset($getInfoTournament->start_date) && $getInfoTournament->start_date ? trim($getInfoTournament->start_date) : NULL;
+                    $data->end_date = isset($getInfoTournament->end_date) && $getInfoTournament->end_date ? trim($getInfoTournament->end_date) : NULL;
+                    $data->register_date_start = isset($getInfoTournament->register_date_start) && $getInfoTournament->register_date_start ? trim($getInfoTournament->register_date_start) : NULL;
+                    $data->register_date_end = isset($getInfoTournament->register_date_end) && $getInfoTournament->register_date_end ? trim($getInfoTournament->register_date_end) : NULL;
+                    $data->type = isset($getInfoTournament->type) && $getInfoTournament->type ? trim($getInfoTournament->type) : NULL;
+                    $data->number_of_participants = isset($getInfoTournament->number_of_participants) && $getInfoTournament->number_of_participants ? trim($getInfoTournament->number_of_participants) : NULL;
+                    $data->detail = isset($getInfoTournament->prize) && $getInfoTournament->prize ? trim($getInfoTournament->prize) : NULL;
+                    $data->image = isset($image) && $image ? trim($image) : NULL;
+                    $data->game_id = isset($getInfoTournament->game_id) && $getInfoTournament->game_id ? trim($getInfoTournament->game_id) : NULL;
+                    $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
+                    $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
+
                     $response->code = '00';
                     $response->desc = 'Get Info Tournament Success!';
-                    $getInfoTournament->image = URL::to("/image/masterTournament/" . $getInfoTournament->id . "/" . $getInfoTournament->image);
-                    $response->data = $getInfoTournament;
+                    $response->data = $data;
                 } else {
                     $response->code = '02';
                     $response->desc = 'Tournament Not Found.';
