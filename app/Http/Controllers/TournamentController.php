@@ -71,7 +71,7 @@ class TournamentController extends Controller
                         );
                         $getCreatedData = MasterTournament::create($insertData);
                         $data = new stdClass();
-                        $data->id = $getCreatedData->id;
+                        $data->tournament_id = $getCreatedData->id;
                         $response->code = '00';
                         $response->desc = 'Create Tournament Success!';
                         $response->data = $data;

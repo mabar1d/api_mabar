@@ -62,8 +62,11 @@ class TeamController extends Controller
                         );
                         Personnel::where('user_id', $adminId)
                             ->update($updatePersonnelTeam);
+                        $data = new stdClass();
+                        $data->team_id = $createTeam->id;
                         $response->code = '00';
                         $response->desc = 'Create Team Success!';
+                        $response->data = $data;
                     } else {
                         $response->code = '02';
                         $response->desc = 'Team Name Already Exist.';
@@ -503,32 +506,48 @@ class TeamController extends Controller
             $requestData = $request->all();
             $validator = Validator::make($requestData, [
                 'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
+                'team_id' => 'required|numeric',
                 'user_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
-                $checkHasTeam = Personnel::select('team_id')
-                    ->where('user_id', $requestData['user_id'])
+                $user_id = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+                $team_id = isset($requestData['team_id']) ? trim($requestData['team_id']) : NULL;
+
+                $checkUserHasTeam = Personnel::select('team_id')
+                    ->where('user_id', $user_id)
                     ->whereNotNull('team_id')
-                    ->first()->toArray();
-                if ($checkHasTeam) {
-                    if ($request->hasFile('image_file')) {
-                        $file = $request->file('image_file');
-                        $fileExtension = $file->getClientOriginalExtension();
-                        $filenameQuestion = 'image_team_' . $checkHasTeam['team_id'] . '.jpg';
-                        $destinationPath = 'app/public/upload/team/' . $checkHasTeam['team_id'];
-                        if (!file_exists(storage_path($destinationPath))) {
-                            mkdir(storage_path($destinationPath), 0775, true);
+                    ->first();
+                if ($checkUserHasTeam) {
+                    $checkTeam = MasterTeam::select('id', 'admin_id')
+                        ->where('id', $team_id)
+                        ->first();
+                    if ($checkTeam) {
+                        if ($checkTeam->admin_id == $user_id) {
+                            if ($request->hasFile('image_file')) {
+                                $file = $request->file('image_file');
+                                $filenameQuestion = 'image_team_' . $checkUserHasTeam->team_id . '.jpg';
+                                $destinationPath = 'app/public/upload/team/' . $checkUserHasTeam->team_id;
+                                if (!file_exists(storage_path($destinationPath))) {
+                                    mkdir(storage_path($destinationPath), 0775, true);
+                                }
+                                $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                                MasterTeam::where('id', $checkUserHasTeam->team_id)
+                                    ->update([
+                                        "image" => $filenameQuestion
+                                    ]);
+                                $response->code = '00';
+                                $response->desc = 'Upload Success.';
+                            } else {
+                                $response->code = '02';
+                                $response->desc = 'Has no File Uploaded.';
+                            }
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'You Not Leader Of Team.';
                         }
-                        $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
-                        MasterTeam::where('id', $checkHasTeam['team_id'])
-                            ->update([
-                                "image" => $filenameQuestion
-                            ]);
-                        $response->code = '00';
-                        $response->desc = 'Upload Success.';
                     } else {
                         $response->code = '02';
-                        $response->desc = 'Has no File Uploaded.';
+                        $response->desc = 'Team Not Found.';
                     }
                 } else {
                     $response->code = '02';
