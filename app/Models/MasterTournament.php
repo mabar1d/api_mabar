@@ -19,6 +19,7 @@ class MasterTournament extends Model
         'number_of_participants',
         'register_date_start',
         'register_date_end',
+        'register_fee',
         'prize',
         'game_id',
         'type'

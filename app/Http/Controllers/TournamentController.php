@@ -39,9 +39,10 @@ class TournamentController extends Controller
                 'number_of_participants' => 'required|numeric|max:16',
                 'register_date_start' => 'required|string',
                 'register_date_end' => 'required|string',
+                'register_fee' => 'required|numeric',
                 'start_date' => 'required|string',
                 'end_date' => 'required|string',
-                'prize' => 'required|string',
+                'prize' => 'required|numeric',
                 'game_id' => 'required|string',
                 'type' => 'required|string',
             ]);
@@ -61,15 +62,19 @@ class TournamentController extends Controller
                             'end_date' => date('Y-m-d', strtotime(trim($requestData['end_date']))),
                             'register_date_start' => date('Y-m-d', strtotime(trim($requestData['register_date_start']))),
                             'register_date_end' => date('Y-m-d', strtotime(trim($requestData['register_date_end']))),
+                            'register_fee' => $requestData['register_fee'],
                             'detail' => $requestData['detail'],
                             'number_of_participants' => $requestData['number_of_participants'],
                             'prize' => $requestData['prize'],
                             'game_id' => $requestData['game_id'],
                             'type' => $requestData['type']
                         );
-                        MasterTournament::create($insertData);
+                        $getCreatedData = MasterTournament::create($insertData);
+                        $data = new stdClass();
+                        $data->id = $getCreatedData->id;
                         $response->code = '00';
                         $response->desc = 'Create Tournament Success!';
+                        $response->data = $data;
                     } else {
                         $response->code = '02';
                         $response->desc = 'Tournament Name Already Exist.';
@@ -107,9 +112,10 @@ class TournamentController extends Controller
                 'number_of_participants' => 'required|numeric',
                 'register_date_start' => 'required|string',
                 'register_date_end' => 'required|string',
+                'register_fee' => 'required|numeric',
                 'start_date' => 'required|string',
                 'end_date' => 'required|string',
-                'prize' => 'required|string',
+                'prize' => 'required|numeric',
                 'game_id' => 'required|string',
                 'type' => 'required|string'
             ]);
@@ -131,6 +137,7 @@ class TournamentController extends Controller
                                 'end_date' => date('Y-m-d', strtotime(trim($requestData['end_date']))),
                                 'register_date_start' => date('Y-m-d', strtotime(trim($requestData['register_date_start']))),
                                 'register_date_end' => date('Y-m-d', strtotime(trim($requestData['register_date_end']))),
+                                'register_fee' => $requestData['register_fee'],
                                 'detail' => $requestData['detail'],
                                 'number_of_participants' => $requestData['number_of_participants'],
                                 'prize' => $requestData['prize'],
@@ -329,28 +336,49 @@ class TournamentController extends Controller
                         ->get();
                     if ($execQuery->first()) {
                         $result = array();
-                        foreach ($execQuery->toArray() as $execQuery_row) {
-                            $getPersonnel = Personnel::where('user_id', $execQuery_row['id_created_by'])->first();
+                        foreach ($execQuery as $execQuery_row) {
+                            $getPersonnel = Personnel::where('user_id', $execQuery_row->id_created_by)->first();
                             $getRatingTournament = RatingTournament::selectRaw('count(*) as total_rater, sum(rating) as total_rating')
-                                ->where('id_tournament', $execQuery_row['id'])
+                                ->where('id_tournament', $execQuery_row->id)
                                 ->groupBy('id_tournament')
                                 ->first();
+
                             $ratingTournament = 0;
                             if ($getRatingTournament) {
                                 $ratingTournament = round($getRatingTournament->total_rating / $getRatingTournament->total_rater);
                             }
-                            if ($execQuery_row['image']) {
-                                $execQuery_row['image'] = URL::to("/image/masterTournament/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                            if ($execQuery_row->image) {
+                                $image = URL::to("/image/masterTournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
                             }
                             $title_game = NULL;
-                            if (isset($execQuery_row['game_id']) && $execQuery_row['game_id']) {
-                                $getMasterGame = MasterGame::where('id', $execQuery_row['game_id'])->first();
+                            if (isset($execQuery_row->game_id) && $execQuery_row->game_id) {
+                                $getMasterGame = MasterGame::where('id', $execQuery_row->game_id)->first();
                                 $title_game = $getMasterGame->title;
                             }
-                            $execQuery_row['title_game'] = $title_game;
-                            $execQuery_row['created_name'] = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
-                            $execQuery_row['rating'] = $ratingTournament;
-                            array_push($result, $execQuery_row);
+                            $getPersonnel = Personnel::where('user_id', $execQuery_row->id_created_by)->first();
+                            if ($getPersonnel) {
+                                $created_name = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
+                            }
+
+                            $data = new stdClass;
+                            $data->id = isset($execQuery_row->id) && $execQuery_row->id ? trim($execQuery_row->id) : NULL;
+                            $data->name = isset($execQuery_row->name) && $execQuery_row->name ? trim($execQuery_row->name) : NULL;
+                            $data->id_created_by = isset($execQuery_row->id_created_by) && $execQuery_row->id_created_by ? trim($execQuery_row->id_created_by) : NULL;
+                            $data->created_name = isset($created_name) && $created_name ? trim($created_name) : NULL;
+                            $data->start_date = isset($execQuery_row->start_date) && $execQuery_row->start_date ? trim($execQuery_row->start_date) : NULL;
+                            $data->end_date = isset($execQuery_row->end_date) && $execQuery_row->end_date ? trim($execQuery_row->end_date) : NULL;
+                            $data->register_date_start = isset($execQuery_row->register_date_start) && $execQuery_row->register_date_start ? trim($execQuery_row->register_date_start) : NULL;
+                            $data->register_date_end = isset($execQuery_row->register_date_end) && $execQuery_row->register_date_end ? trim($execQuery_row->register_date_end) : NULL;
+                            $data->register_fee = isset($execQuery_row->register_fee) && $execQuery_row->register_fee ? $execQuery_row->register_fee : 0;
+                            $data->type = isset($execQuery_row->type) && $execQuery_row->type ? trim($execQuery_row->type) : NULL;
+                            $data->number_of_participants = isset($execQuery_row->number_of_participants) && $execQuery_row->number_of_participants ? trim($execQuery_row->number_of_participants) : NULL;
+                            $data->detail = isset($execQuery_row->detail) && $execQuery_row->detail ? trim($execQuery_row->detail) : NULL;
+                            $data->prize = isset($execQuery_row->prize) && $execQuery_row->prize ? $execQuery_row->prize : 0;
+                            $data->image = isset($image) && $image ? trim($image) : NULL;
+                            $data->game_id = isset($execQuery_row->game_id) && $execQuery_row->game_id ? trim($execQuery_row->game_id) : NULL;
+                            $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
+                            $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
+                            array_push($result, $data);
                         }
                         $response->code = '00';
                         $response->desc = 'Get List Tournament Success!';
@@ -423,9 +451,11 @@ class TournamentController extends Controller
                     $data->end_date = isset($getInfoTournament->end_date) && $getInfoTournament->end_date ? trim($getInfoTournament->end_date) : NULL;
                     $data->register_date_start = isset($getInfoTournament->register_date_start) && $getInfoTournament->register_date_start ? trim($getInfoTournament->register_date_start) : NULL;
                     $data->register_date_end = isset($getInfoTournament->register_date_end) && $getInfoTournament->register_date_end ? trim($getInfoTournament->register_date_end) : NULL;
+                    $data->register_fee = isset($getInfoTournament->register_fee) && $getInfoTournament->register_fee ? $getInfoTournament->register_fee : 0;
                     $data->type = isset($getInfoTournament->type) && $getInfoTournament->type ? trim($getInfoTournament->type) : NULL;
                     $data->number_of_participants = isset($getInfoTournament->number_of_participants) && $getInfoTournament->number_of_participants ? trim($getInfoTournament->number_of_participants) : NULL;
-                    $data->detail = isset($getInfoTournament->prize) && $getInfoTournament->prize ? trim($getInfoTournament->prize) : NULL;
+                    $data->detail = isset($getInfoTournament->detail) && $getInfoTournament->detail ? trim($getInfoTournament->detail) : NULL;
+                    $data->prize = isset($getInfoTournament->prize) && $getInfoTournament->prize ? $getInfoTournament->prize : 0;
                     $data->image = isset($image) && $image ? trim($image) : NULL;
                     $data->game_id = isset($getInfoTournament->game_id) && $getInfoTournament->game_id ? trim($getInfoTournament->game_id) : NULL;
                     $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
