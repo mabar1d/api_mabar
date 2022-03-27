@@ -38,9 +38,10 @@ class PersonnelController extends Controller
             ]);
             $userId = trim($requestData['user_id']);
             if (!$validator->fails()) {
-                $query = Personnel::select('personnel.*', 'm_gender.gender')
+                $query = Personnel::select('users.username', 'personnel.*', 'm_gender.gender')
                     ->leftJoin('m_gender', 'personnel.gender_id', '=', 'm_gender.gender_id')
-                    ->where('user_id', $userId);
+                    ->leftJoin('users', 'personnel.user_id', '=', 'users.id')
+                    ->where('personnel.user_id', $userId);
                 $execQuery = $query->first();
                 if (isset($execQuery->birthdate) && $execQuery->birthdate) {
                     $execQuery->birthdate = date("d-m-Y", strtotime($execQuery->birthdate));
