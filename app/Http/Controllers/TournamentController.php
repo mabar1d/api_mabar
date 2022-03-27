@@ -247,36 +247,41 @@ class TournamentController extends Controller
                 if ($getPersonnel) {
                     if (isset($getPersonnel->team_id) && $getPersonnel->team_id) {
                         $getInfoTournament = MasterTournament::where('id', $tournamentId)->first();
-                        if ($getInfoTournament) {
-                            if ((strtotime("now") >= strtotime($getInfoTournament->register_date_start)) && (strtotime("now") <= strtotime($getInfoTournament->register_date_end))) {
-                                $checkQuotaTournament = TeamTournament::where('tournament_id', $getInfoTournament->id)
-                                    ->where('active', '1')
-                                    ->count();
-                                if ($checkQuotaTournament <= $getInfoTournament->number_of_participants) {
-                                    $insertData = array(
-                                        'team_id' => $getPersonnel->team_id,
-                                        'tournament_id' => $tournamentId,
-                                        'active' => '1',
-                                        'created_by' => $userId,
-                                    );;
-                                    if (TeamTournament::firstOrCreate($insertData)->wasRecentlyCreated) {
-                                        $response->code = '00';
-                                        $response->desc = 'Register Tournament Success!';
+                        if ($userId == $getPersonnel->team_id) {
+                            if ($getInfoTournament) {
+                                if ((strtotime("now") >= strtotime($getInfoTournament->register_date_start)) && (strtotime("now") <= strtotime($getInfoTournament->register_date_end))) {
+                                    $checkQuotaTournament = TeamTournament::where('tournament_id', $getInfoTournament->id)
+                                        ->where('active', '1')
+                                        ->count();
+                                    if ($checkQuotaTournament <= $getInfoTournament->number_of_participants) {
+                                        $insertData = array(
+                                            'team_id' => $getPersonnel->team_id,
+                                            'tournament_id' => $tournamentId,
+                                            'active' => '1',
+                                            'created_by' => $userId,
+                                        );;
+                                        if (TeamTournament::firstOrCreate($insertData)->wasRecentlyCreated) {
+                                            $response->code = '00';
+                                            $response->desc = 'Register Tournament Success!';
+                                        } else {
+                                            $response->code = '01';
+                                            $response->desc = 'Team is Registered on this Tournament.';
+                                        }
                                     } else {
-                                        $response->code = '01';
-                                        $response->desc = 'Team is Registered on this Tournament.';
+                                        $response->code = '02';
+                                        $response->desc = 'Quota Tournament is Full.';
                                     }
                                 } else {
                                     $response->code = '02';
-                                    $response->desc = 'Quota Tournament is Full.';
+                                    $response->desc = 'Register Tournament Closed.';
                                 }
                             } else {
                                 $response->code = '02';
-                                $response->desc = 'Register Tournament Closed.';
+                                $response->desc = 'Tournament Not Found.';
                             }
                         } else {
                             $response->code = '02';
-                            $response->desc = 'Tournament Not Found.';
+                            $response->desc = 'Register Tournament Must Role Team Leader.';
                         }
                     } else {
                         $response->code = '02';
@@ -365,10 +370,10 @@ class TournamentController extends Controller
                             $data->name = isset($execQuery_row->name) && $execQuery_row->name ? trim($execQuery_row->name) : NULL;
                             $data->id_created_by = isset($execQuery_row->id_created_by) && $execQuery_row->id_created_by ? trim($execQuery_row->id_created_by) : NULL;
                             $data->created_name = isset($created_name) && $created_name ? trim($created_name) : NULL;
-                            $data->start_date = isset($execQuery_row->start_date) && $execQuery_row->start_date ? trim($execQuery_row->start_date) : NULL;
-                            $data->end_date = isset($execQuery_row->end_date) && $execQuery_row->end_date ? trim($execQuery_row->end_date) : NULL;
-                            $data->register_date_start = isset($execQuery_row->register_date_start) && $execQuery_row->register_date_start ? trim($execQuery_row->register_date_start) : NULL;
-                            $data->register_date_end = isset($execQuery_row->register_date_end) && $execQuery_row->register_date_end ? trim($execQuery_row->register_date_end) : NULL;
+                            $data->start_date = isset($execQuery_row->start_date) && $execQuery_row->start_date ? date_format(date_create(trim($execQuery_row->start_date)), "d-m-Y") : NULL;
+                            $data->end_date = isset($execQuery_row->end_date) && $execQuery_row->end_date ? date_format(date_create(trim($execQuery_row->end_date)), "d-m-Y") : NULL;
+                            $data->register_date_start = isset($execQuery_row->register_date_start) && $execQuery_row->register_date_start ? date_format(date_create(trim($execQuery_row->register_date_start)), "d-m-Y") : NULL;
+                            $data->register_date_end = isset($execQuery_row->register_date_end) && $execQuery_row->register_date_end ? date_format(date_create(trim($execQuery_row->register_date_end)), "d-m-Y") : NULL;
                             $data->register_fee = isset($execQuery_row->register_fee) && $execQuery_row->register_fee ? trim(number_format($execQuery_row->register_fee, 0, ",", ".")) : "0";
                             $data->type = isset($execQuery_row->type) && $execQuery_row->type ? trim($execQuery_row->type) : NULL;
                             $data->number_of_participants = isset($execQuery_row->number_of_participants) && $execQuery_row->number_of_participants ? trim(strval($execQuery_row->number_of_participants)) : NULL;
@@ -447,10 +452,10 @@ class TournamentController extends Controller
                     $data->name = isset($getInfoTournament->name) && $getInfoTournament->name ? trim($getInfoTournament->name) : NULL;
                     $data->id_created_by = isset($getInfoTournament->id_created_by) && $getInfoTournament->id_created_by ? trim($getInfoTournament->id_created_by) : NULL;
                     $data->created_name = isset($created_name) && $created_name ? trim($created_name) : NULL;
-                    $data->start_date = isset($getInfoTournament->start_date) && $getInfoTournament->start_date ? trim($getInfoTournament->start_date) : NULL;
-                    $data->end_date = isset($getInfoTournament->end_date) && $getInfoTournament->end_date ? trim($getInfoTournament->end_date) : NULL;
-                    $data->register_date_start = isset($getInfoTournament->register_date_start) && $getInfoTournament->register_date_start ? trim($getInfoTournament->register_date_start) : NULL;
-                    $data->register_date_end = isset($getInfoTournament->register_date_end) && $getInfoTournament->register_date_end ? trim($getInfoTournament->register_date_end) : NULL;
+                    $data->start_date = isset($getInfoTournament->start_date) && $getInfoTournament->start_date ? date_format(date_create(trim($getInfoTournament->start_date)), "d-m-Y") : NULL;
+                    $data->end_date = isset($getInfoTournament->end_date) && $getInfoTournament->end_date ? date_format(date_create(trim($getInfoTournament->end_date)), "d-m-Y") : NULL;
+                    $data->register_date_start = isset($getInfoTournament->register_date_start) && $getInfoTournament->register_date_start ? date_format(date_create(trim($getInfoTournament->register_date_start)), "d-m-Y") : NULL;
+                    $data->register_date_end = isset($getInfoTournament->register_date_end) && $getInfoTournament->register_date_end ? date_format(date_create(trim($getInfoTournament->register_date_end)), "d-m-Y") : NULL;
                     $data->register_fee = isset($getInfoTournament->register_fee) && $getInfoTournament->register_fee ? trim(number_format($getInfoTournament->register_fee, 0, ",", ".")) : "0";
                     $data->type = isset($getInfoTournament->type) && $getInfoTournament->type ? trim($getInfoTournament->type) : NULL;
                     $data->number_of_participants = isset($getInfoTournament->number_of_participants) && $getInfoTournament->number_of_participants ? trim(strval($getInfoTournament->number_of_participants)) : NULL;
