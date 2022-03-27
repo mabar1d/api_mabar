@@ -172,7 +172,7 @@ class TeamController extends Controller
                         $updatePersonnelTeam = array(
                             'team_id' => NULL
                         );
-                        Personnel::where('user_id', $adminId)
+                        Personnel::where('team_id', $teamId)
                             ->update($updatePersonnelTeam);
                         $response->code = '00';
                         $response->desc = 'Delete Team Success!';
