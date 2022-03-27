@@ -248,31 +248,36 @@ class TournamentController extends Controller
                     if (isset($getPersonnel->team_id) && $getPersonnel->team_id) {
                         $getInfoTournament = MasterTournament::where('id', $tournamentId)->first();
                         if ($getInfoTournament) {
-                            if ((strtotime("now") >= strtotime($getInfoTournament->register_date_start)) && (strtotime("now") <= strtotime($getInfoTournament->register_date_end))) {
-                                $checkQuotaTournament = TeamTournament::where('tournament_id', $getInfoTournament->id)
-                                    ->where('active', '1')
-                                    ->count();
-                                if ($checkQuotaTournament <= $getInfoTournament->number_of_participants) {
-                                    $insertData = array(
-                                        'team_id' => $getPersonnel->team_id,
-                                        'tournament_id' => $tournamentId,
-                                        'active' => '1',
-                                        'created_by' => $userId,
-                                    );;
-                                    if (TeamTournament::firstOrCreate($insertData)->wasRecentlyCreated) {
-                                        $response->code = '00';
-                                        $response->desc = 'Register Tournament Success!';
+                            if (strtotime("now") >= strtotime($getInfoTournament->register_date_start)) {
+                                if (strtotime("now") <= strtotime($getInfoTournament->register_date_end)) {
+                                    $checkQuotaTournament = TeamTournament::where('tournament_id', $getInfoTournament->id)
+                                        ->where('active', '1')
+                                        ->count();
+                                    if ($checkQuotaTournament <= $getInfoTournament->number_of_participants) {
+                                        $insertData = array(
+                                            'team_id' => $getPersonnel->team_id,
+                                            'tournament_id' => $tournamentId,
+                                            'active' => '1',
+                                            'created_by' => $userId,
+                                        );;
+                                        if (TeamTournament::firstOrCreate($insertData)->wasRecentlyCreated) {
+                                            $response->code = '00';
+                                            $response->desc = 'Register Tournament Success!';
+                                        } else {
+                                            $response->code = '01';
+                                            $response->desc = 'Team is Registered on this Tournament.';
+                                        }
                                     } else {
-                                        $response->code = '01';
-                                        $response->desc = 'Team is Registered on this Tournament.';
+                                        $response->code = '02';
+                                        $response->desc = 'Quota Tournament is Full.';
                                     }
                                 } else {
                                     $response->code = '02';
-                                    $response->desc = 'Quota Tournament is Full.';
+                                    $response->desc = 'Register Tournament Closed.';
                                 }
                             } else {
                                 $response->code = '02';
-                                $response->desc = 'Register Tournament Closed.';
+                                $response->desc = 'Register Tournament Not Open Yet.';
                             }
                         } else {
                             $response->code = '02';
