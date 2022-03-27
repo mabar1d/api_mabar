@@ -352,6 +352,7 @@ class TournamentController extends Controller
                             if ($getRatingTournament) {
                                 $ratingTournament = round($getRatingTournament->total_rating / $getRatingTournament->total_rater);
                             }
+                            $image = null;
                             if ($execQuery_row->image) {
                                 $image = URL::to("/image/masterTournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
                             }
