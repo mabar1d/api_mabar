@@ -242,6 +242,11 @@ class TeamController extends Controller
                         $responseData->name = isset($execQuery_row->name) && $execQuery_row->name ? trim($execQuery_row->name) : "";
                         $responseData->info = isset($execQuery_row->info) && $execQuery_row->info ? trim($execQuery_row->info) : "";
                         $responseData->admin_id = isset($execQuery_row->admin_id) && $execQuery_row->admin_id ? trim($execQuery_row->admin_id) : "";
+                        $responseData->username_admin = "";
+                        $getTeamLeadUsername = User::where('id', $execQuery_row->admin_id)->first();
+                        if ($getTeamLeadUsername) {
+                            $responseData->username_admin = isset($getTeamLeadUsername->username) && $getTeamLeadUsername->username ? trim($getTeamLeadUsername->username) : "";
+                        }
                         $responseData->image = isset($execQuery_row->image) && $execQuery_row->image ? URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']) : NULL;
                         $responseData->personnel = array();
                         $arrayPersonnelId = json_decode($execQuery_row->personnel, true);
@@ -302,6 +307,12 @@ class TeamController extends Controller
                     $responseData->id = isset($getInfoTeam->id) && $getInfoTeam->id ? trim($getInfoTeam->id) : "";
                     $responseData->name = isset($getInfoTeam->name) && $getInfoTeam->name ? trim($getInfoTeam->name) : "";
                     $responseData->info = isset($getInfoTeam->info) && $getInfoTeam->info ? trim($getInfoTeam->info) : "";
+                    $responseData->admin_id = isset($getInfoTeam->admin_id) && $getInfoTeam->admin_id ? trim($getInfoTeam->admin_id) : "";
+                    $responseData->username_admin = "";
+                    $getTeamLeadUsername = User::where('id', $getInfoTeam->admin_id)->first();
+                    if ($getTeamLeadUsername) {
+                        $responseData->username_admin = isset($getTeamLeadUsername->username) && $getTeamLeadUsername->username ? trim($getTeamLeadUsername->username) : "";
+                    }
                     $responseData->admin_id = isset($getInfoTeam->admin_id) && $getInfoTeam->admin_id ? trim($getInfoTeam->admin_id) : "";
                     $responseData->image = isset($getInfoTeam->image) && $getInfoTeam->image ? URL::to("/image/masterTeam/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']) : NULL;
                     $responseData->personnel = array();
@@ -438,15 +449,19 @@ class TeamController extends Controller
                         if ($listReqJoinTeam->first()) {
                             $resultData = array();
                             foreach ($listReqJoinTeam->toArray() as $listReqJoinTeamRow) {
-                                $user_name = '';
-                                $personnelInfo = Personnel::where('user_id', $listReqJoinTeamRow['user_id'])
+                                $personnel_name = '';
+                                $personnelInfo = Personnel::select('users.username', 'personnel.*')
+                                    ->leftJoin('users', 'users.id', '=', 'personnel.user_id')
+                                    ->where('personnel.user_id', $listReqJoinTeamRow['user_id'])
                                     ->first();
                                 if ($personnelInfo) {
-                                    $user_name = isset($personnelInfo->firstname) && $personnelInfo->firstname ? $personnelInfo->firstname . ' ' . $personnelInfo->lastname : '';
+                                    $personnel_name = isset($personnelInfo->firstname) && $personnelInfo->firstname ? trim($personnelInfo->firstname . ' ' . $personnelInfo->lastname) : '';
+                                    $personnel_username = isset($personnelInfo->username) && $personnelInfo->username ? trim($personnelInfo->username) : '';
                                 }
                                 $data = array(
                                     "user_request_id" => $listReqJoinTeamRow['user_id'],
-                                    "user_request_name" => $user_name
+                                    "user_request_name" => $personnel_name,
+                                    "user_request_username" => $personnel_username,
                                 );
                                 array_push($resultData, $data);
                             }
