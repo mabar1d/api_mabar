@@ -459,4 +459,69 @@ class PersonnelController extends Controller
         }
         return response()->json($response);
     }
+
+    public function getPersonnelNotMember(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            // dd($requestData);
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'search' => 'string',
+                'page' => 'required|numeric'
+            ]);
+            if (!$validator->fails()) {
+                $search = trim($requestData['search']);
+                $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
+                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+
+                $limit = 20;
+                $query = Personnel::select('users.username', 'personnel.*', 'm_gender.gender')
+                    ->leftJoin('m_gender', 'personnel.gender_id', '=', 'm_gender.gender_id')
+                    ->leftJoin('users', 'personnel.user_id', '=', 'users.id')
+                    ->whereNotIn('personnel.role', array('2'))
+                    ->whereNull('personnel.team_id');
+                if ($search) {
+                    $query->where('personnel.firstname', 'like', $search . '%')
+                        ->orWhere('personnel.lastname', 'like', $search . '%')
+                        ->orWhere('users.username', 'like', $search . '%');
+                }
+                if ($page > 1) {
+                    $offset = ($page - 1) * $limit;
+                    $query->offset($offset);
+                }
+                $execQuery = $query->limit($limit)
+                    ->get();
+                if ($execQuery->first()) {
+                    $result = array();
+                    foreach ($execQuery->toArray() as $execQuery_row) {
+                        $execQuery_row['birthdate'] = !empty($execQuery_row['birthdate']) ? date('d-m-Y', strtotime(trim($execQuery_row['birthdate']))) : NULL;
+                        if (isset($execQuery_row['image']) && $execQuery_row['image']) {
+                            $execQuery_row['image'] = URL::to("/image/personnel/" . $execQuery_row['user_id'] . "/" . $execQuery_row['image']);
+                        }
+                        array_push($result, $execQuery_row);
+                    }
+                    $response->code = '00';
+                    $response->desc = 'Get List Personnel Not Member Success!';
+                    $response->data = $result;
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'List Personnel Not Member is Empty.';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
 }

@@ -30,6 +30,7 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('personnelReqTeamLead', 'PersonnelController@personnelReqTeamLead');
     $router->post('personnelReqJoinTeam', 'PersonnelController@personnelReqJoinTeam');
     $router->post('personnelLeaveTeam', 'PersonnelController@personnelLeaveTeam');
+    $router->post('getPersonnelNotMember', 'PersonnelController@getPersonnelNotMember');
 
     $router->post('createTeam', 'TeamController@create');
     $router->post('updateTeam', 'TeamController@update');
