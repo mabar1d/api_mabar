@@ -8,6 +8,7 @@ use App\Models\Personnel;
 use App\Models\MasterReqJoinTeam;
 use App\Models\MasterTournament;
 use App\Models\TeamTournament;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 use Illuminate\Support\Facades\Validator;
@@ -50,6 +51,7 @@ class TeamController extends Controller
                 if ($checkPersonnelRole) {
                     $checkTeamName = MasterTeam::where('name', $teamName)->first();
                     if (!$checkTeamName) {
+                        array_push($teamPersonnel, $adminId);
                         $insertData = array(
                             'name' => $teamName,
                             'info' => $teamInfo,
@@ -116,6 +118,7 @@ class TeamController extends Controller
                 if ($checkPersonnelRole) {
                     $checkTeamExist = MasterTeam::where('id', $teamId)->first();
                     if ($checkTeamExist) {
+                        array_push($teamPersonnel, $adminId);
                         $updateData = array(
                             'name' => $teamName,
                             'info' => $teamInfo,
@@ -123,6 +126,11 @@ class TeamController extends Controller
                             'personnel' => json_encode($teamPersonnel),
                         );
                         MasterTeam::where('id', $teamId)->update($updateData);
+                        $updatePersonnelTeam = array(
+                            'team_id' => $teamId
+                        );
+                        Personnel::whereIn('user_id', $teamPersonnel)->update($updatePersonnelTeam);
+
                         $response->code = '00';
                         $response->desc = 'Update Team Success!';
                     } else {
@@ -228,11 +236,29 @@ class TeamController extends Controller
                     ->get();
                 if ($execQuery->first()) {
                     $result = array();
-                    foreach ($execQuery->toArray() as $execQuery_row) {
-                        if ($execQuery_row['image']) {
-                            $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                    foreach ($execQuery as $execQuery_row) {
+                        $responseData = new stdClass();
+                        $responseData->id = isset($execQuery_row->id) && $execQuery_row->id ? trim($execQuery_row->id) : "";
+                        $responseData->name = isset($execQuery_row->name) && $execQuery_row->name ? trim($execQuery_row->name) : "";
+                        $responseData->info = isset($execQuery_row->info) && $execQuery_row->info ? trim($execQuery_row->info) : "";
+                        $responseData->admin_id = isset($execQuery_row->admin_id) && $execQuery_row->admin_id ? trim($execQuery_row->admin_id) : "";
+                        $responseData->image = isset($execQuery_row->image) && $execQuery_row->image ? URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']) : NULL;
+                        $responseData->personnel = array();
+                        $arrayPersonnelId = json_decode($execQuery_row->personnel, true);
+                        if (count($arrayPersonnelId) > 0) {
+                            $getPersonnelUsername = User::whereIn('id', $arrayPersonnelId)->get();
+                            foreach ($getPersonnelUsername as $rowPersonnelUsername) {
+                                $arrayPersonnel = array(
+                                    "user_id" => isset($rowPersonnelUsername->id) && $rowPersonnelUsername->id ? trim($rowPersonnelUsername->id) : "",
+                                    "username" => isset($rowPersonnelUsername->username) && $rowPersonnelUsername->username ? trim($rowPersonnelUsername->username) : ""
+                                );
+                                array_push($responseData->personnel, $arrayPersonnel);
+                            }
                         }
-                        array_push($result, $execQuery_row);
+                        // if ($execQuery_row['image']) {
+                        //     $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                        // }
+                        array_push($result, $responseData);
                     }
                     $response->code = '00';
                     $response->desc = 'Get List Team Success!';
@@ -272,12 +298,28 @@ class TeamController extends Controller
 
                 $getInfoTeam = MasterTeam::where('id', $teamId)->first();
                 if ($getInfoTeam) {
-                    if ($getInfoTeam->image) {
-                        $getInfoTeam->image = URL::to("/image/masterTeam/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']);
+                    $responseData = new stdClass();
+                    $responseData->id = isset($getInfoTeam->id) && $getInfoTeam->id ? trim($getInfoTeam->id) : "";
+                    $responseData->name = isset($getInfoTeam->name) && $getInfoTeam->name ? trim($getInfoTeam->name) : "";
+                    $responseData->info = isset($getInfoTeam->info) && $getInfoTeam->info ? trim($getInfoTeam->info) : "";
+                    $responseData->admin_id = isset($getInfoTeam->admin_id) && $getInfoTeam->admin_id ? trim($getInfoTeam->admin_id) : "";
+                    $responseData->image = isset($getInfoTeam->image) && $getInfoTeam->image ? URL::to("/image/masterTeam/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']) : NULL;
+                    $responseData->personnel = array();
+                    $arrayPersonnelId = json_decode($getInfoTeam->personnel, true);
+                    if (count($arrayPersonnelId) > 0) {
+                        $getPersonnelUsername = User::whereIn('id', $arrayPersonnelId)->get();
+                        foreach ($getPersonnelUsername as $rowPersonnelUsername) {
+                            $arrayPersonnel = array(
+                                "user_id" => isset($rowPersonnelUsername->id) && $rowPersonnelUsername->id ? trim($rowPersonnelUsername->id) : "",
+                                "username" => isset($rowPersonnelUsername->username) && $rowPersonnelUsername->username ? trim($rowPersonnelUsername->username) : ""
+                            );
+                            array_push($responseData->personnel, $arrayPersonnel);
+                        }
                     }
+
                     $response->code = '00';
                     $response->desc = 'Get Info Team Success!';
-                    $response->data = $getInfoTeam;
+                    $response->data = $responseData;
                 } else {
                     $response->code = '02';
                     $response->desc = 'Team Not Found.';
@@ -318,35 +360,42 @@ class TeamController extends Controller
                     $checkPersonnelTeam = Personnel::where('user_id', $user_id_requested)
                         ->first();
                     if ($checkPersonnelTeam) {
-                        if (empty($checkPersonnelTeam->team_id)) {
-                            if ($answer == 1) {
-                                $arrayPersonnelTeam = array();
-                                if (is_array($checkTeamExist['personnel'])) {
-                                    $arrayPersonnelTeam = $checkTeamExist['personnel'];
+                        $checkMasterReqJoinTeam = MasterReqJoinTeam::where('user_id', $user_id_requested)
+                            ->where('team_id', $checkTeamExist->id)->first();
+                        if ($checkMasterReqJoinTeam) {
+                            if (empty($checkPersonnelTeam->team_id)) {
+                                if ($answer == 1) {
+                                    $arrayPersonnelTeam = array();
+                                    $arrayPersonnelTeam = json_decode($checkTeamExist['personnel'], true);
+                                    array_push($arrayPersonnelTeam, $user_id_requested);
+                                    MasterTeam::where('id', $checkTeamExist['id'])
+                                        ->update(array(
+                                            'personnel' => json_encode($arrayPersonnelTeam)
+                                        ));
+                                    Personnel::where('user_id', $user_id_requested)
+                                        ->update(array(
+                                            'team_id' => $checkTeamExist['id']
+                                        ));
+                                    // MasterReqJoinTeam::where('user_id', $user_id_requested)
+                                    //     ->update(array('answer' => 1));
+                                    MasterReqJoinTeam::where('user_id', $user_id_requested)->delete();
+                                } else {
+                                    MasterReqJoinTeam::where('user_id', $user_id_requested)
+                                        ->update(array('answer' => 0));
                                 }
-                                array_push($arrayPersonnelTeam, $user_id_requested);
-                                MasterTeam::where('id', $checkTeamExist['id'])
-                                    ->update(array(
-                                        'personnel' => json_encode($arrayPersonnelTeam)
-                                    ));
-                                Personnel::where('user_id', $user_id_requested)
-                                    ->update(array(
-                                        'team_id' => $checkTeamExist['id']
-                                    ));
-                                MasterReqJoinTeam::where('user_id', $user_id_requested)->delete();
+                                $response->code = '00';
+                                $response->desc = 'Answer Request Success!';
                             } else {
-                                MasterReqJoinTeam::where('user_id', $user_id_requested)
-                                    ->update(array('answer' => 0));
+                                $response->code = '02';
+                                $response->desc = 'Personnel Request Have Team.';
                             }
-                            $response->code = '00';
-                            $response->desc = 'Answer Request Success!';
                         } else {
                             $response->code = '02';
-                            $response->desc = 'Personnel Have Team.';
+                            $response->desc = 'Personnel Not Request a Team.';
                         }
                     } else {
                         $response->code = '02';
-                        $response->desc = 'Personnel Not Found.';
+                        $response->desc = 'Personnel Request Not Found.';
                     }
                 } else {
                     $response->code = '02';
@@ -381,36 +430,40 @@ class TeamController extends Controller
                 $userId = trim($requestData['user_id']);
                 $teamId = trim($requestData['team_id']);
                 $checkTeamExist = MasterTeam::where('id', $teamId)
-                    ->where('admin_id', $userId)
-                    ->first()->toArray();
+                    ->first();
                 if ($checkTeamExist) {
-                    $listReqJoinTeam = MasterReqJoinTeam::where('team_id', $teamId)
-                        ->get();
-                    if ($listReqJoinTeam->first()) {
-                        $resultData = array();
-                        foreach ($listReqJoinTeam->toArray() as $listReqJoinTeamRow) {
-                            $user_name = '';
-                            $personnelInfo = Personnel::where('user_id', $listReqJoinTeamRow['user_id'])
-                                ->first();
-                            if ($personnelInfo) {
-                                $user_name = isset($personnelInfo->firstname) && $personnelInfo->firstname ? $personnelInfo->firstname . ' ' . $personnelInfo->lastname : '';
+                    if ($checkTeamExist->admin_id == $userId) {
+                        $listReqJoinTeam = MasterReqJoinTeam::where('team_id', $teamId)
+                            ->get();
+                        if ($listReqJoinTeam->first()) {
+                            $resultData = array();
+                            foreach ($listReqJoinTeam->toArray() as $listReqJoinTeamRow) {
+                                $user_name = '';
+                                $personnelInfo = Personnel::where('user_id', $listReqJoinTeamRow['user_id'])
+                                    ->first();
+                                if ($personnelInfo) {
+                                    $user_name = isset($personnelInfo->firstname) && $personnelInfo->firstname ? $personnelInfo->firstname . ' ' . $personnelInfo->lastname : '';
+                                }
+                                $data = array(
+                                    "user_request_id" => $listReqJoinTeamRow['user_id'],
+                                    "user_request_name" => $user_name
+                                );
+                                array_push($resultData, $data);
                             }
-                            $data = array(
-                                "user_request_id" => $listReqJoinTeamRow['user_id'],
-                                "user_request_name" => $user_name
-                            );
-                            array_push($resultData, $data);
+                            $response->code = '00';
+                            $response->desc = 'Get List Success!';
+                            $response->data = $resultData;
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Request List Team Empty.';
                         }
-                        $response->code = '00';
-                        $response->desc = 'Get List Success!';
-                        $response->data = $resultData;
                     } else {
                         $response->code = '02';
-                        $response->desc = 'Request List Team Empty.';
+                        $response->desc = 'Access Forbidden. Team Leader Only.';
                     }
                 } else {
                     $response->code = '02';
-                    $response->desc = 'Access Denied. Team Leader Only.';
+                    $response->desc = 'Team Not Found.';
                 }
             } else {
                 $response->code = '01';
@@ -552,6 +605,90 @@ class TeamController extends Controller
                 } else {
                     $response->code = '02';
                     $response->desc = 'User Not Join a Team.';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
+    public function getListMyTeamTournament(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'team_id' => 'required|string',
+                'search' => 'string',
+                'page' => 'numeric'
+            ]);
+            if (!$validator->fails()) {
+                $search = trim($requestData['search']);
+                $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
+                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+                $teamId = isset($requestData['team_id']) ? trim($requestData['team_id']) : NULL;
+
+                $checkMasterTeam = MasterTeam::where('id', $teamId)
+                    ->first();
+                if ($checkMasterTeam) {
+                    $teamMember = json_decode($checkMasterTeam->personnel, true);
+                    if (in_array($userId, $teamMember)) {
+                        $queryTeamTournament = TeamTournament::where('team_id', $teamId)
+                            ->where('active', '1')
+                            ->pluck('tournament_id');
+                        if ($queryTeamTournament->first()) {
+                            $arrayTournamentId = array();
+                            foreach ($queryTeamTournament as $rowTournamentId) {
+                                array_push($arrayTournamentId, $rowTournamentId);
+                            }
+                            $query = MasterTournament::whereIn('id', $arrayTournamentId);
+                            $limit = 20;
+                            if ($search) {
+                                $query->where('name', 'like', $search . '%');
+                            }
+                            if ($page > 1) {
+                                $offset = ($page - 1) * $limit;
+                                $query->offset($offset);
+                            }
+                            $execQuery = $query->limit($limit)
+                                ->get();
+                            if ($execQuery->first()) {
+                                $result = array();
+                                foreach ($execQuery->toArray() as $execQuery_row) {
+                                    if ($execQuery_row['image']) {
+                                        $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                                    }
+                                    array_push($result, $execQuery_row);
+                                }
+                                $response->code = '00';
+                                $response->desc = 'Get List My Team Tournament Success!';
+                                $response->data = $result;
+                            } else {
+                                $response->code = '02';
+                                $response->desc = 'List My Team Tournament is Empty.';
+                            }
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Team Not Participate In Any Tournament.';
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Personnel is not the Team Member.';
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Team Not Found.';
                 }
             } else {
                 $response->code = '01';

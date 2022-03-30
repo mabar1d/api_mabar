@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Personnel;
 use App\Models\MasterReqJoinTeam;
 use App\Models\MasterTeam;
+use App\Models\MasterTournament;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 use Illuminate\Support\Facades\Validator;
@@ -228,6 +229,74 @@ class PersonnelController extends Controller
         return response()->json($response);
     }
 
+    public function personnelReqMember(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|numeric',
+            ]);
+            $userId = $requestData['user_id'];
+            if (!$validator->fails()) {
+                $findPersonnel = Personnel::where('user_id', $userId)->first();
+                if ($findPersonnel) {
+                    if ($findPersonnel->is_verified == 1) {
+                        if (empty($findPersonnel->team_id)) {
+                            $passValidate = true;
+                            if ($findPersonnel->role == 3) {
+                                if (empty($findPersonnel->team_id)) {
+                                    $checkTournamentExist = MasterTournament::where('id_created_by', $userId)
+                                        ->whereRaw("DATE(end_date) >= DATE(NOW())")
+                                        ->first();
+                                    if ($checkTournamentExist) {
+                                        $response->code = '02';
+                                        $response->desc = 'Personnel already have a tournament going on. Please wait until the tournament is over!';
+                                        $passValidate = false;
+                                    }
+                                } else {
+                                    $response->code = '02';
+                                    $response->desc = 'Personnel already join team. Please leave team first!';
+                                    $passValidate = false;
+                                }
+                            }
+                            if ($passValidate) {
+                                $updateData = array(
+                                    'role' => '1',
+                                );
+                                Personnel::where('user_id', $userId)
+                                    ->update($updateData);
+                                $response->code = '00';
+                                $response->desc = 'Personnel Change To Member Success!';
+                            }
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Personnel already join team. Please leave team first!';
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Please Complete the Profile First!';
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Personnel Not Found';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
     public function personnelReqTeamLead(Request $request)
     {
         $response = new stdClass();
@@ -242,22 +311,24 @@ class PersonnelController extends Controller
             $userId = $requestData['user_id'];
             if (!$validator->fails()) {
                 $findPersonnel = Personnel::where('user_id', $userId)->first();
-                if ($findPersonnel && empty($findPersonnel['team_id'])) {
-                    if ($findPersonnel['is_verified'] == 1) {
-                        $updateData = array(
-                            'role' => '2',
-                        );
-                        Personnel::where('user_id', $userId)
-                            ->update($updateData);
-                        $response->code = '00';
-                        $response->desc = 'Personnel Change To Team Leader Success!';
+                if ($findPersonnel) {
+                    if ($findPersonnel->is_verified == 1) {
+                        if (empty($findPersonnel->team_id)) {
+                            $updateData = array(
+                                'role' => '2',
+                            );
+                            Personnel::where('user_id', $userId)
+                                ->update($updateData);
+                            $response->code = '00';
+                            $response->desc = 'Personnel Change To Team Leader Success!';
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Personnel already join team. Please leave team first!';
+                        }
                     } else {
                         $response->code = '02';
                         $response->desc = 'Please Complete the Profile First!';
                     }
-                } else if ($findPersonnel && !empty($findPersonnel['team_id'])) {
-                    $response->code = '02';
-                    $response->desc = 'Personnel already join team. Please leave team first!';
                 } else {
                     $response->code = '02';
                     $response->desc = 'Personnel Not Found';
@@ -289,22 +360,24 @@ class PersonnelController extends Controller
             $userId = $requestData['user_id'];
             if (!$validator->fails()) {
                 $findPersonnel = Personnel::where('user_id', $userId)->first();
-                if ($findPersonnel && empty($findPersonnel['team_id'])) {
-                    if ($findPersonnel['is_verified'] == 1) {
-                        $updateData = array(
-                            'role' => '3',
-                        );
-                        Personnel::where('user_id', $userId)
-                            ->update($updateData);
-                        $response->code = '00';
-                        $response->desc = 'Personnel Change To Host Success!';
+                if ($findPersonnel) {
+                    if ($findPersonnel->is_verified == 1) {
+                        if (empty($findPersonnel->team_id)) {
+                            $updateData = array(
+                                'role' => '3',
+                            );
+                            Personnel::where('user_id', $userId)
+                                ->update($updateData);
+                            $response->code = '00';
+                            $response->desc = 'Personnel Change To Host Success!';
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Personnel already join team. Please leave team first!';
+                        }
                     } else {
                         $response->code = '02';
-                        $response->desc = 'Personnel already join team. Please leave team first!';
+                        $response->desc = 'Please Complete your profile first!';
                     }
-                } else if ($findPersonnel && !empty($findPersonnel['team_id'])) {
-                    $response->code = '02';
-                    $response->desc = 'Personnel already join team. Please leave team first!';
                 } else {
                     $response->code = '02';
                     $response->desc = 'Personnel Not Found';
@@ -334,25 +407,34 @@ class PersonnelController extends Controller
                 'user_id' => 'required|numeric',
                 'team_id' => 'required|numeric',
             ]);
-            $userId = trim($requestData['user_id']);
-            $teamId = trim($requestData['team_id']);
             if (!$validator->fails()) {
-                $findPersonnel = Personnel::where('user_id', $userId)->first();
-                if ($findPersonnel && empty($findPersonnel['team_id'])) {
-                    $createData = array(
-                        'user_id' => $userId,
-                        'team_id' => $teamId,
-                        'answer' => NULL
-                    );
-                    MasterReqJoinTeam::updateOrCreate(['user_id' => $userId, 'team_id' => $teamId], $createData);
-                    $response->code = '00';
-                    $response->desc = 'Request Has Been Sent!';
-                } else if ($findPersonnel && !empty($findPersonnel['team_id'])) {
-                    $response->code = '02';
-                    $response->desc = 'Personnel already join team. Please leave team first!';
+                $userId = trim($requestData['user_id']);
+                $teamId = trim($requestData['team_id']);
+
+                $findTeam = MasterTeam::where('id', $teamId)->first();
+                if ($findTeam) {
+                    $findPersonnel = Personnel::where('user_id', $userId)->first();
+                    if ($findPersonnel) {
+                        if (empty($findPersonnel->team_id)) {
+                            $createData = array(
+                                'user_id' => $userId,
+                                'team_id' => $teamId,
+                                'answer' => NULL
+                            );
+                            MasterReqJoinTeam::updateOrCreate(['user_id' => $userId, 'team_id' => $teamId], $createData);
+                            $response->code = '00';
+                            $response->desc = 'Request Has Been Sent!';
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Personnel already join team. Please leave team first!';
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Personnel Not Found';
+                    }
                 } else {
                     $response->code = '02';
-                    $response->desc = 'Personnel Not Found';
+                    $response->desc = 'Team Not Found';
                 }
             } else {
                 $response->code = '01';

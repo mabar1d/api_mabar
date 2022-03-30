@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasterGame;
+use App\Models\MasterTeam;
 use Illuminate\Http\Request;
 use App\Models\MasterTournament;
 use App\Models\Personnel;
@@ -246,42 +247,53 @@ class TournamentController extends Controller
                 $getPersonnel = Personnel::where('user_id', $userId)->first();
                 if ($getPersonnel) {
                     if (isset($getPersonnel->team_id) && $getPersonnel->team_id) {
-                        $getInfoTournament = MasterTournament::where('id', $tournamentId)->first();
-                        if ($getInfoTournament) {
-                            if (strtotime("now") >= strtotime($getInfoTournament->register_date_start)) {
-                                if (strtotime("now") <= strtotime($getInfoTournament->register_date_end)) {
-                                    $checkQuotaTournament = TeamTournament::where('tournament_id', $getInfoTournament->id)
-                                        ->where('active', '1')
-                                        ->count();
-                                    if ($checkQuotaTournament <= $getInfoTournament->number_of_participants) {
-                                        $insertData = array(
-                                            'team_id' => $getPersonnel->team_id,
-                                            'tournament_id' => $tournamentId,
-                                            'active' => '1',
-                                            'created_by' => $userId,
-                                        );;
-                                        if (TeamTournament::firstOrCreate($insertData)->wasRecentlyCreated) {
-                                            $response->code = '00';
-                                            $response->desc = 'Register Tournament Success!';
+                        $getTeam = MasterTeam::where('id', $getPersonnel->team_id)->first();
+                        if ($getTeam) {
+                            if ($getTeam->admin_id == $userId) {
+                                $getInfoTournament = MasterTournament::where('id', $tournamentId)->first();
+                                if ($getInfoTournament) {
+                                    if (strtotime("now") >= strtotime($getInfoTournament->register_date_start)) {
+                                        if (strtotime("now") <= strtotime($getInfoTournament->register_date_end)) {
+                                            $checkQuotaTournament = TeamTournament::where('tournament_id', $getInfoTournament->id)
+                                                ->where('active', '1')
+                                                ->count();
+                                            if ($checkQuotaTournament <= $getInfoTournament->number_of_participants) {
+                                                $insertData = array(
+                                                    'team_id' => $getPersonnel->team_id,
+                                                    'tournament_id' => $tournamentId,
+                                                    'active' => '1',
+                                                    'created_by' => $userId,
+                                                );;
+                                                if (TeamTournament::firstOrCreate($insertData)->wasRecentlyCreated) {
+                                                    $response->code = '00';
+                                                    $response->desc = 'Register Tournament Success!';
+                                                } else {
+                                                    $response->code = '01';
+                                                    $response->desc = 'Team is Registered on this Tournament.';
+                                                }
+                                            } else {
+                                                $response->code = '02';
+                                                $response->desc = 'Quota Tournament is Full.';
+                                            }
                                         } else {
-                                            $response->code = '01';
-                                            $response->desc = 'Team is Registered on this Tournament.';
+                                            $response->code = '02';
+                                            $response->desc = 'Register Tournament Closed.';
                                         }
                                     } else {
                                         $response->code = '02';
-                                        $response->desc = 'Quota Tournament is Full.';
+                                        $response->desc = 'Register Tournament Not Open Yet.';
                                     }
                                 } else {
                                     $response->code = '02';
-                                    $response->desc = 'Register Tournament Closed.';
+                                    $response->desc = 'Tournament Not Found.';
                                 }
                             } else {
                                 $response->code = '02';
-                                $response->desc = 'Register Tournament Not Open Yet.';
+                                $response->desc = 'Access Forbidden. Register Tournament Must Team Leader.';
                             }
                         } else {
                             $response->code = '02';
-                            $response->desc = 'Tournament Not Found.';
+                            $response->desc = 'Team Not Found.';
                         }
                     } else {
                         $response->code = '02';
@@ -571,6 +583,115 @@ class TournamentController extends Controller
                 $response->code = '00';
                 $response->desc = 'Get Carousel Tournament Success!';
                 $response->data = $resultData;
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
+
+    public function getListMyTournament(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            // $requestUser = auth()->user()->toArray();
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'search' => 'string',
+                'page' => 'numeric',
+                'filter_game' => 'required|string', 'min:2'
+            ]);
+            if (!$validator->fails()) {
+                $search = trim($requestData['search']);
+                $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
+                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+                $filter_game = json_decode($requestData['filter_game'], true);
+
+                if ($filter_game || empty($filter_game)) {
+                    $limit = 20;
+                    $query = MasterTournament::select('*')
+                        ->where('id_created_by', $userId)
+                        ->whereRaw('DATE(register_date_start) >= DATE(NOW())');
+                    if (isset($filter_game) && $filter_game) {
+                        $query->whereIn('game_id', $filter_game);
+                    }
+                    if ($search) {
+                        $query->where('name', 'like', $search . '%');
+                    }
+                    if ($page > 1) {
+                        $offset = ($page - 1) * $limit;
+                        $query->offset($offset);
+                    }
+                    $execQuery = $query->limit($limit)
+                        ->get();
+                    if ($execQuery->first()) {
+                        $result = array();
+                        foreach ($execQuery as $execQuery_row) {
+                            $getPersonnel = Personnel::where('user_id', $execQuery_row->id_created_by)->first();
+                            $getRatingTournament = RatingTournament::selectRaw('count(*) as total_rater, sum(rating) as total_rating')
+                                ->where('id_tournament', $execQuery_row->id)
+                                ->groupBy('id_tournament')
+                                ->first();
+
+                            $ratingTournament = 0;
+                            if ($getRatingTournament) {
+                                $ratingTournament = round($getRatingTournament->total_rating / $getRatingTournament->total_rater);
+                            }
+                            $image = null;
+                            if ($execQuery_row->image) {
+                                $image = URL::to("/image/masterTournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
+                            }
+                            $title_game = NULL;
+                            if (isset($execQuery_row->game_id) && $execQuery_row->game_id) {
+                                $getMasterGame = MasterGame::where('id', $execQuery_row->game_id)->first();
+                                $title_game = $getMasterGame->title;
+                            }
+                            $getPersonnel = Personnel::where('user_id', $execQuery_row->id_created_by)->first();
+                            if ($getPersonnel) {
+                                $created_name = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
+                            }
+
+                            $data = new stdClass;
+                            $data->id = isset($execQuery_row->id) && $execQuery_row->id ? trim($execQuery_row->id) : NULL;
+                            $data->name = isset($execQuery_row->name) && $execQuery_row->name ? trim($execQuery_row->name) : NULL;
+                            $data->id_created_by = isset($execQuery_row->id_created_by) && $execQuery_row->id_created_by ? trim($execQuery_row->id_created_by) : NULL;
+                            $data->created_name = isset($created_name) && $created_name ? trim($created_name) : NULL;
+                            $data->start_date = isset($execQuery_row->start_date) && $execQuery_row->start_date ? date_format(date_create(trim($execQuery_row->start_date)), "d-m-Y") : NULL;
+                            $data->end_date = isset($execQuery_row->end_date) && $execQuery_row->end_date ? date_format(date_create(trim($execQuery_row->end_date)), "d-m-Y") : NULL;
+                            $data->register_date_start = isset($execQuery_row->register_date_start) && $execQuery_row->register_date_start ? date_format(date_create(trim($execQuery_row->register_date_start)), "d-m-Y") : NULL;
+                            $data->register_date_end = isset($execQuery_row->register_date_end) && $execQuery_row->register_date_end ? date_format(date_create(trim($execQuery_row->register_date_end)), "d-m-Y") : NULL;
+                            $data->register_fee = isset($execQuery_row->register_fee) && $execQuery_row->register_fee ? trim(number_format($execQuery_row->register_fee, 0, ",", ".")) : "0";
+                            $data->type = isset($execQuery_row->type) && $execQuery_row->type ? trim($execQuery_row->type) : NULL;
+                            $data->number_of_participants = isset($execQuery_row->number_of_participants) && $execQuery_row->number_of_participants ? trim(strval($execQuery_row->number_of_participants)) : NULL;
+                            $data->detail = isset($execQuery_row->detail) && $execQuery_row->detail ? trim($execQuery_row->detail) : NULL;
+                            $data->prize = isset($execQuery_row->prize) && $execQuery_row->prize ? trim(number_format($execQuery_row->prize, 0, ",", ".")) : "0";
+                            $data->image = isset($image) && $image ? trim($image) : NULL;
+                            $data->game_id = isset($execQuery_row->game_id) && $execQuery_row->game_id ? trim($execQuery_row->game_id) : NULL;
+                            $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
+                            $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
+                            array_push($result, $data);
+                        }
+                        $response->code = '00';
+                        $response->desc = 'Get List Tournament Success!';
+                        $response->data = $result;
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'List Tournament is Empty.';
+                    }
+                } else {
+                    $response->code = '01';
+                    $response->desc = 'Parameter filter_game must array.';
+                }
             } else {
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();

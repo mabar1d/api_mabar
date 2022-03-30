@@ -21,17 +21,21 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('logout', 'AuthController@logout');
     $router->post('refresh', 'AuthController@refresh');
     $router->get('profile', 'AuthController@userProfile');
+
+    //PERSONNEL
     $router->post('getPersonnel', 'PersonnelController@getPersonnel');
     $router->post('getListPersonnel', 'PersonnelController@getListPersonnel');
     $router->post('updateInfoPersonnel', 'PersonnelController@updateInfoPersonnel');
     $router->post('updateTeamPersonnel', 'PersonnelController@updateTeamPersonnel');
     $router->post('uploadImagePersonnel', 'PersonnelController@uploadImage');
     $router->post('personnelReqHost', 'PersonnelController@personnelReqHost');
+    $router->post('personnelReqMember', 'PersonnelController@personnelReqMember');
     $router->post('personnelReqTeamLead', 'PersonnelController@personnelReqTeamLead');
     $router->post('personnelReqJoinTeam', 'PersonnelController@personnelReqJoinTeam');
     $router->post('personnelLeaveTeam', 'PersonnelController@personnelLeaveTeam');
     $router->post('getPersonnelNotMember', 'PersonnelController@getPersonnelNotMember');
 
+    //TEAM
     $router->post('createTeam', 'TeamController@create');
     $router->post('updateTeam', 'TeamController@update');
     $router->post('deleteTeam', 'TeamController@delete');
@@ -41,7 +45,9 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('answerReqJoinTeam', 'TeamController@answerReqJoinTeam');
     $router->post('getListReqJoinTeam', 'TeamController@getListReqJoinTeam');
     $router->post('getListTournamentTeam', 'TeamController@getListTournamentTeam');
+    $router->post('getListMyTeamTournament', 'TeamController@getListMyTeamTournament');
 
+    //TOURNAMENT
     $router->post('createTournament', 'TournamentController@create');
     $router->post('updateTournament', 'TournamentController@update');
     $router->post('deleteTournamet', 'TournamentController@delete');
@@ -50,11 +56,14 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('getInfoTournament', 'TournamentController@getInfoTournament');
     $router->post('uploadImageTournament', 'TournamentController@uploadImage');
     $router->post('getCarouselTournament', 'TournamentController@getCarouselTournament');
+    $router->post('getListMyTournament', 'TournamentController@getListMyTournament');
 
+    //RATING TOURNAMENT
     $router->post('giveRatingTournament', 'RatingTournamentController@create');
     $router->post('updateRatingTournament', 'RatingTournamentController@update');
     $router->post('deleteRatingTournamet', 'RatingTournamentController@delete');
 
+    //GAME
     $router->post('createGame', 'GameController@create');
     $router->post('updateMasterGame', 'GameController@update');
     $router->post('deleteMasterGame', 'GameController@delete');
