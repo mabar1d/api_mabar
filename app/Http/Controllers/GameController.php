@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogApi;
 use Illuminate\Http\Request;
 use App\Models\MasterGame;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,7 @@ class GameController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -99,6 +101,7 @@ class GameController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -140,6 +143,7 @@ class GameController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -196,6 +200,7 @@ class GameController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -236,6 +241,7 @@ class GameController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -283,6 +289,7 @@ class GameController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 }

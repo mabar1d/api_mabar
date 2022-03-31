@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogApi;
 use App\Models\MasterGame;
 use App\Models\MasterTeam;
 use Illuminate\Http\Request;
@@ -47,10 +48,10 @@ class TournamentController extends Controller
                 'game_id' => 'required|string',
                 'type' => 'required|string',
             ]);
-            $hostId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
+            $userId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
             if (!$validator->fails()) {
-                $checkPersonnelRole = Personnel::where('user_id', $hostId)
+                $checkPersonnelRole = Personnel::where('user_id', $userId)
                     ->where('role', '3')
                     ->first();
                 if ($checkPersonnelRole) {
@@ -58,7 +59,7 @@ class TournamentController extends Controller
                     if (!$checkTournamentName) {
                         $insertData = array(
                             'name' => $tournamentName,
-                            'id_created_by' => $hostId,
+                            'id_created_by' => $userId,
                             'start_date' => date('Y-m-d', strtotime(trim($requestData['start_date']))),
                             'end_date' => date('Y-m-d', strtotime(trim($requestData['end_date']))),
                             'register_date_start' => date('Y-m-d', strtotime(trim($requestData['register_date_start']))),
@@ -94,6 +95,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -120,20 +122,20 @@ class TournamentController extends Controller
                 'game_id' => 'required|string',
                 'type' => 'required|string'
             ]);
-            $hostId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
+            $userId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
             $tournamentName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
             if (!$validator->fails()) {
-                $checkPersonnelRole = Personnel::where('user_id', $hostId)
+                $checkPersonnelRole = Personnel::where('user_id', $userId)
                     ->where('role', '3')
                     ->first();
                 if ($checkPersonnelRole) {
                     $checkTournamentId = MasterTournament::where('id', $tournamentId)->first();
                     if ($checkTournamentId) {
-                        if ($checkTournamentId->id_created_by == $hostId) {
+                        if ($checkTournamentId->id_created_by == $userId) {
                             $updateData = array(
                                 'name' => $tournamentName,
-                                'id_created_by' => $hostId,
+                                'id_created_by' => $userId,
                                 'start_date' => date('Y-m-d', strtotime(trim($requestData['start_date']))),
                                 'end_date' => date('Y-m-d', strtotime(trim($requestData['end_date']))),
                                 'register_date_start' => date('Y-m-d', strtotime(trim($requestData['register_date_start']))),
@@ -171,6 +173,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -186,16 +189,16 @@ class TournamentController extends Controller
                 'host_id' => 'required|string',
                 'tournament_id' => 'required|string',
             ]);
-            $hostId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
+            $userId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
             if (!$validator->fails()) {
-                $checkPersonnelRole = Personnel::where('user_id', $hostId)
+                $checkPersonnelRole = Personnel::where('user_id', $userId)
                     ->where('role', '3')
                     ->first();
                 if ($checkPersonnelRole) {
                     $checkTournamentExist = MasterTournament::where('id', $tournamentId)->first();
                     if ($checkTournamentExist) {
-                        if ($checkTournamentExist->id_created_by == $hostId) {
+                        if ($checkTournamentExist->id_created_by == $userId) {
                             MasterTournament::where('id', $tournamentId)->delete();
                             $destinationPath = 'app/public/upload/tournament/' . $checkTournamentExist->id . '/' . $checkTournamentExist->image;
                             if (file_exists(storage_path($destinationPath))) {
@@ -225,6 +228,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -313,6 +317,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -419,6 +424,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -496,6 +502,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -513,13 +520,13 @@ class TournamentController extends Controller
                 'user_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
+                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+
                 $checkTournament = MasterTournament::where('id', $requestData['tournament_id'])
-                    ->where('id_created_by', $requestData['user_id'])
+                    ->where('id_created_by', $userId)
                     ->first()->toArray();
                 if ($checkTournament) {
                     if ($request->hasFile('image_file')) {
-                        $file = $request->file('image_file');
-                        $fileExtension = $file->getClientOriginalExtension();
                         $filenameQuestion = 'image_tournament_' . $checkTournament['id'] . '.jpg';
                         $destinationPath = 'app/public/upload/tournament/' . $checkTournament['id'];
                         if (!file_exists(storage_path($destinationPath))) {
@@ -550,6 +557,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -573,7 +581,8 @@ class TournamentController extends Controller
                 $resultData = array();
                 foreach ($query as $queryRow) {
                     $data = array(
-                        "id" => isset($queryRow->id) && $queryRow->id ? trim($queryRow->id) : ""
+                        "id" => isset($queryRow->id) && $queryRow->id ? trim($queryRow->id) : "",
+                        "image" => NULL
                     );
                     if ($queryRow->image) {
                         $data['image'] = URL::to("/image/masterTournament/" . $queryRow['id'] . "/" . $queryRow['image']);
@@ -593,6 +602,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -702,6 +712,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 }

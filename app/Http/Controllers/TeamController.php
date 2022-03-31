@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogApi;
 use App\Models\MasterGame;
 use Illuminate\Http\Request;
 use App\Models\MasterTeam;
@@ -42,13 +43,13 @@ class TeamController extends Controller
                 'game_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
-                $adminId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
                 $teamName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
                 $teamInfo = isset($requestData['info']) ? trim($requestData['info']) : NULL;
                 $teamPersonnel = isset($requestData['personnel']) ? json_decode($requestData['personnel']) : NULL;
                 $gameId = isset($requestData['game_id']) ? trim($requestData['game_id']) : NULL;
 
-                $checkPersonnelRole = Personnel::where('user_id', $adminId)
+                $checkPersonnelRole = Personnel::where('user_id', $userId)
                     ->where('role', '2')
                     ->first();
                 if ($checkPersonnelRole) {
@@ -56,11 +57,11 @@ class TeamController extends Controller
                     if (!$checkTeamName) {
                         $checkGame = MasterGame::where("id", $gameId)->first();
                         if ($checkGame) {
-                            array_push($teamPersonnel, $adminId);
+                            array_push($teamPersonnel, $userId);
                             $insertData = array(
                                 'name' => $teamName,
                                 'info' => $teamInfo,
-                                'admin_id' => $adminId,
+                                'admin_id' => $userId,
                                 'personnel' => json_encode($teamPersonnel),
                                 'game_id' => $gameId,
                             );
@@ -68,7 +69,7 @@ class TeamController extends Controller
                             $updatePersonnelTeam = array(
                                 'team_id' => $createTeam->id
                             );
-                            Personnel::where('user_id', $adminId)
+                            Personnel::where('user_id', $userId)
                                 ->update($updatePersonnelTeam);
                             $data = new stdClass();
                             $data->team_id = $createTeam->id;
@@ -98,6 +99,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -118,14 +120,14 @@ class TeamController extends Controller
                 'game_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
-                $adminId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
                 $teamId = isset($requestData['team_id']) ? trim($requestData['team_id']) : NULL;
                 $teamName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
                 $teamInfo = isset($requestData['info']) ? trim($requestData['info']) : NULL;
                 $teamPersonnel = isset($requestData['personnel']) ? json_decode($requestData['personnel']) : NULL;
                 $gameId = isset($requestData['game_id']) ? trim($requestData['game_id']) : NULL;
 
-                $checkPersonnelRole = Personnel::where('user_id', $adminId)
+                $checkPersonnelRole = Personnel::where('user_id', $userId)
                     ->where('role', '2')
                     ->first();
                 if ($checkPersonnelRole) {
@@ -133,11 +135,11 @@ class TeamController extends Controller
                     if ($checkTeamExist) {
                         $checkGame = MasterGame::where("id", $gameId)->first();
                         if ($checkGame) {
-                            array_push($teamPersonnel, $adminId);
+                            array_push($teamPersonnel, $userId);
                             $updateData = array(
                                 'name' => $teamName,
                                 'info' => $teamInfo,
-                                'admin_id' => $adminId,
+                                'admin_id' => $userId,
                                 'personnel' => json_encode($teamPersonnel),
                                 'game_id' => $gameId,
                             );
@@ -171,6 +173,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -187,10 +190,10 @@ class TeamController extends Controller
                 'team_id' => 'required|string',
             ]);
             if (!$validator->fails()) {
-                $adminId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
                 $teamId = isset($requestData['team_id']) ? trim($requestData['team_id']) : NULL;
 
-                $checkPersonnelRole = Personnel::where('user_id', $adminId)
+                $checkPersonnelRole = Personnel::where('user_id', $userId)
                     ->where('role', '2')
                     ->first();
                 if ($checkPersonnelRole) {
@@ -222,6 +225,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -306,6 +310,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -375,6 +380,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -392,11 +398,11 @@ class TeamController extends Controller
                 'answer' => 'required|numeric',
             ]);
             if (!$validator->fails()) {
-                $adminId = trim($requestData['user_id']);
+                $userId = trim($requestData['user_id']);
                 $user_id_requested = trim($requestData['user_id_requested']);
                 $answer = trim($requestData['answer']);
 
-                $checkTeamExist = MasterTeam::where('admin_id', $adminId)->first();
+                $checkTeamExist = MasterTeam::where('admin_id', $userId)->first();
                 if ($checkTeamExist) {
                     $checkPersonnelTeam = Personnel::where('user_id', $user_id_requested)
                         ->first();
@@ -452,6 +458,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -520,6 +527,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -591,6 +599,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -661,6 +670,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
@@ -745,6 +755,7 @@ class TeamController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 }

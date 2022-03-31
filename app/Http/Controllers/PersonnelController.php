@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogApi;
 use Illuminate\Http\Request;
 use App\Models\Personnel;
 use App\Models\MasterReqJoinTeam;
