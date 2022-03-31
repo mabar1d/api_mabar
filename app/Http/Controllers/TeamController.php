@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MasterGame;
 use Illuminate\Http\Request;
 use App\Models\MasterTeam;
 use App\Models\Personnel;
@@ -37,13 +38,15 @@ class TeamController extends Controller
                 'user_id' => 'required|string',
                 'name' => 'required|string',
                 'info' => 'required|string',
-                'personnel' => 'required|string'
+                'personnel' => 'required|string',
+                'game_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
                 $adminId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
                 $teamName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
                 $teamInfo = isset($requestData['info']) ? trim($requestData['info']) : NULL;
                 $teamPersonnel = isset($requestData['personnel']) ? json_decode($requestData['personnel']) : NULL;
+                $gameId = isset($requestData['game_id']) ? trim($requestData['game_id']) : NULL;
 
                 $checkPersonnelRole = Personnel::where('user_id', $adminId)
                     ->where('role', '2')
@@ -51,24 +54,32 @@ class TeamController extends Controller
                 if ($checkPersonnelRole) {
                     $checkTeamName = MasterTeam::where('name', $teamName)->first();
                     if (!$checkTeamName) {
-                        array_push($teamPersonnel, $adminId);
-                        $insertData = array(
-                            'name' => $teamName,
-                            'info' => $teamInfo,
-                            'admin_id' => $adminId,
-                            'personnel' => json_encode($teamPersonnel),
-                        );
-                        $createTeam = MasterTeam::create($insertData);
-                        $updatePersonnelTeam = array(
-                            'team_id' => $createTeam->id
-                        );
-                        Personnel::where('user_id', $adminId)
-                            ->update($updatePersonnelTeam);
-                        $data = new stdClass();
-                        $data->team_id = $createTeam->id;
-                        $response->code = '00';
-                        $response->desc = 'Create Team Success!';
-                        $response->data = $data;
+                        $checkGame = MasterGame::where("id", $gameId)->first();
+                        if ($checkGame) {
+                            array_push($teamPersonnel, $adminId);
+                            $insertData = array(
+                                'name' => $teamName,
+                                'info' => $teamInfo,
+                                'admin_id' => $adminId,
+                                'personnel' => json_encode($teamPersonnel),
+                                'game_id' => $gameId,
+                            );
+                            $createTeam = MasterTeam::create($insertData);
+                            $updatePersonnelTeam = array(
+                                'team_id' => $createTeam->id
+                            );
+                            Personnel::where('user_id', $adminId)
+                                ->update($updatePersonnelTeam);
+                            $data = new stdClass();
+                            $data->team_id = $createTeam->id;
+
+                            $response->code = '00';
+                            $response->desc = 'Create Team Success!';
+                            $response->data = $data;
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Game Not Found.';
+                        }
                     } else {
                         $response->code = '02';
                         $response->desc = 'Team Name Already Exist.';
@@ -104,6 +115,7 @@ class TeamController extends Controller
                 'name' => 'required|string',
                 'info' => 'required|string',
                 'personnel' => 'required|string',
+                'game_id' => 'required|numeric'
             ]);
             if (!$validator->fails()) {
                 $adminId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
@@ -111,6 +123,7 @@ class TeamController extends Controller
                 $teamName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
                 $teamInfo = isset($requestData['info']) ? trim($requestData['info']) : NULL;
                 $teamPersonnel = isset($requestData['personnel']) ? json_decode($requestData['personnel']) : NULL;
+                $gameId = isset($requestData['game_id']) ? trim($requestData['game_id']) : NULL;
 
                 $checkPersonnelRole = Personnel::where('user_id', $adminId)
                     ->where('role', '2')
@@ -118,21 +131,28 @@ class TeamController extends Controller
                 if ($checkPersonnelRole) {
                     $checkTeamExist = MasterTeam::where('id', $teamId)->first();
                     if ($checkTeamExist) {
-                        array_push($teamPersonnel, $adminId);
-                        $updateData = array(
-                            'name' => $teamName,
-                            'info' => $teamInfo,
-                            'admin_id' => $adminId,
-                            'personnel' => json_encode($teamPersonnel),
-                        );
-                        MasterTeam::where('id', $teamId)->update($updateData);
-                        $updatePersonnelTeam = array(
-                            'team_id' => $teamId
-                        );
-                        Personnel::whereIn('user_id', $teamPersonnel)->update($updatePersonnelTeam);
+                        $checkGame = MasterGame::where("id", $gameId)->first();
+                        if ($checkGame) {
+                            array_push($teamPersonnel, $adminId);
+                            $updateData = array(
+                                'name' => $teamName,
+                                'info' => $teamInfo,
+                                'admin_id' => $adminId,
+                                'personnel' => json_encode($teamPersonnel),
+                                'game_id' => $gameId,
+                            );
+                            MasterTeam::where('id', $teamId)->update($updateData);
+                            $updatePersonnelTeam = array(
+                                'team_id' => $teamId
+                            );
+                            Personnel::whereIn('user_id', $teamPersonnel)->update($updatePersonnelTeam);
 
-                        $response->code = '00';
-                        $response->desc = 'Update Team Success!';
+                            $response->code = '00';
+                            $response->desc = 'Update Team Success!';
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'Game Not Found.';
+                        }
                     } else {
                         $response->code = '02';
                         $response->desc = 'Team Not Found.';
@@ -260,11 +280,15 @@ class TeamController extends Controller
                                 array_push($responseData->personnel, $arrayPersonnel);
                             }
                         }
-                        // if ($execQuery_row['image']) {
-                        //     $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
-                        // }
+                        $responseData->game_id = isset($execQuery_row->game_id) && $execQuery_row->game_id ? trim($execQuery_row->game_id) : "";
+                        $responseData->title_game = "";
+                        $getGameName = MasterGame::where('id', $execQuery_row->game_id)->first();
+                        if ($getGameName) {
+                            $responseData->title_game = isset($getGameName->title) && $getGameName->title ? trim($getGameName->title) : "";
+                        }
                         array_push($result, $responseData);
                     }
+
                     $response->code = '00';
                     $response->desc = 'Get List Team Success!';
                     $response->data = $result;
@@ -326,6 +350,12 @@ class TeamController extends Controller
                             );
                             array_push($responseData->personnel, $arrayPersonnel);
                         }
+                    }
+                    $responseData->game_id = isset($getInfoTeam->game_id) && $getInfoTeam->game_id ? trim($getInfoTeam->game_id) : "";
+                    $responseData->title_game = "";
+                    $getGameName = MasterGame::where('id', $getInfoTeam->game_id)->first();
+                    if ($getGameName) {
+                        $responseData->title_game = isset($getGameName->title) && $getGameName->title ? trim($getGameName->title) : "";
                     }
 
                     $response->code = '00';

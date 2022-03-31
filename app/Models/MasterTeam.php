@@ -15,7 +15,8 @@ class MasterTeam extends Model
         'info',
         'admin_id',
         'personnel',
-        'photo'
+        'image',
+        'game_id'
     ];
     protected $hidden = array('created_at', 'updated_at');
 }
