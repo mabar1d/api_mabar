@@ -21,7 +21,7 @@ class TournamentController extends Controller
     public function __construct(Request $request)
     {
         $token = $request->bearerToken();
-        if ($token != env('GOD_BEARER')) {
+        if ($token !== env('GOD_BEARER')) {
             $this->middleware('auth:api');
         }
     }
