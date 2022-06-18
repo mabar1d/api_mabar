@@ -715,4 +715,47 @@ class TournamentController extends Controller
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
+
+    public function getTournamentTreeWeb(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            if (!$validator->fails()) {
+                $checkDataExist = MasterTournament::find($tournamentId)->first();
+                if ($checkDataExist) {
+                    $urlDomain = env('WEB_DOMAIN');
+                    $urlGetTournamentTree = $urlDomain . "/look_tournament/?tournament_id=" . $tournamentId;
+                    $resultData = array(
+                        "url" => $urlGetTournamentTree
+                    );
+                    $response->code = '00';
+                    $response->desc = 'Get Tournament Tree Web Success!';
+                    $response->data = $resultData;
+                } else {
+                    $response->code = '02';
+                    $response->desc = "Tournament Not Found!";
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
 }
