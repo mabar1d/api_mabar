@@ -519,9 +519,8 @@ class TournamentController extends Controller
                 'tournament_id' => 'required|numeric',
                 'user_id' => 'required|numeric'
             ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
-                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-
                 $checkTournament = MasterTournament::where('id', $requestData['tournament_id'])
                     ->where('id_created_by', $userId)
                     ->first()->toArray();
