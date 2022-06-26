@@ -7,6 +7,7 @@ use App\Models\MasterGame;
 use App\Models\MasterTeam;
 use Illuminate\Http\Request;
 use App\Models\MasterTournament;
+use App\Models\MatchTournament;
 use App\Models\Personnel;
 use App\Models\RatingTournament;
 use App\Models\TeamTournament;
@@ -755,6 +756,140 @@ class TournamentController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+    public function setMatchTournament(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string',
+                'match_array' => 'string',
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            $arrayMatchTournament = isset($requestData['match_array']) && $requestData['match_array'] ? json_decode($requestData['match_array'], true) : NULL;
+            if (!$validator->fails()) {
+                $checkDataExist = MasterTournament::find($tournamentId)->first();
+                if ($checkDataExist) {
+                    $tournamentDetail = $checkDataExist->toArray();
+                    if (strtotime(date("Y/m/d")) < strtotime($tournamentDetail["start_date"])) {
+                        $round = 0;
+                        foreach ($arrayMatchTournament as $rowArrayMatchTournament) {
+                            $round++;
+                            MatchTournament::updateOrCreate(
+                                [
+                                    'id' => isset($rowArrayMatchTournament["match_id"]) && $rowArrayMatchTournament["match_id"] ? $rowArrayMatchTournament["match_id"] : NULL
+                                ],
+                                [
+                                    'tournament_id' => $tournamentId,
+                                    'tournament_phase' => 1,
+                                    'round' => $round,
+                                    'home_team_id' => isset($rowArrayMatchTournament["home_team_id"]) && $rowArrayMatchTournament["home_team_id"] ? $rowArrayMatchTournament["home_team_id"] : NULL,
+                                    'opponent_team_id' => isset($rowArrayMatchTournament["opponent_team_id"]) && $rowArrayMatchTournament["opponent_team_id"] ? $rowArrayMatchTournament["opponent_team_id"] : NULL,
+                                    'score_home' => NULL,
+                                    'score_opponent' => NULL
+                                ]
+                            );
+                        }
+                        $response->code = '00';
+                        $response->desc = 'Set Tournament Match Success!';
+                    } else {
+                        $response->code = '02';
+                        $response->desc = "Tournament Is Running! Can't Save Matching Tournament";
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = "Tournament Not Found!";
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+    public function randomMatchTournament(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            if (!$validator->fails()) {
+                $checkDataExist = MasterTournament::find($tournamentId)->first();
+                if ($checkDataExist) {
+                    $tournamentDetail = $checkDataExist->toArray();
+                    if (strtotime(date("Y/m/d")) < strtotime($tournamentDetail["start_date"])) {
+                        $getTeamTournament = TeamTournament::where("tournament_id", $tournamentId)
+                            ->where("active", 1)
+                            ->get();
+                        if ($getTeamTournament->first()) {
+                            $getTeamTournament = $getTeamTournament->toArray();
+                            shuffle($getTeamTournament);
+                            $maxPerMatch = 2;
+                            $arrayMatchResult = $arrayPerMatch = array();
+                            foreach ($getTeamTournament as $rowTeamTournament) {
+                                array_push($arrayPerMatch, $rowTeamTournament["team_id"]);
+                                if (count($arrayPerMatch) == $maxPerMatch) {
+                                    array_push($arrayMatchResult, $arrayPerMatch);
+                                    $arrayPerMatch = array();
+                                }
+                            }
+                            array_push($arrayMatchResult, $arrayPerMatch);
+
+                            $resultArray = array();
+                            foreach ($arrayMatchResult as $rowMatchResult) {
+                                $matching = array(
+                                    "matching_id" => null,
+                                    "home_team_id" => isset($rowMatchResult[0]) && $rowMatchResult[0] ? $rowMatchResult[0] : NULL,
+                                    "opponent_team_id" => isset($rowMatchResult[1]) && $rowMatchResult[1] ? $rowMatchResult[1] : NULL
+                                );
+                                array_push($resultArray, $matching);
+                            }
+                            $response->code = '00';
+                            $response->desc = 'Set Tournament Match Success!';
+                            $response->data = $resultArray;
+                        } else {
+                            $response->code = '02';
+                            $response->desc = "Tournament Is Running!";
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = "Tournament Is Running!";
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = "Tournament Not Found!";
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+        } catch (Exception $e) {
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
