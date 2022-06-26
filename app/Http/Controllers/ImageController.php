@@ -36,7 +36,6 @@ class ImageController extends Controller
     {
         $destinationPath = 'app/public/upload/tournament/' . $id . '/' . $image_id;
         if (file_exists(storage_path($destinationPath))) {
-            dd("masuk");
             $type = pathinfo($destinationPath, PATHINFO_EXTENSION);
             header("Content-Type: " . $type);
             readfile(storage_path($destinationPath));
