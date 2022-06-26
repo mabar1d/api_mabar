@@ -41,7 +41,7 @@ class ImageController extends Controller
             $type = pathinfo($destinationPath, PATHINFO_EXTENSION);
             header("Content-Type: " . $type);
             // storage_path($destinationPath));
-            file_get_contents(URL::to('/storage_api_mabar/upload/tournament/15/image_tournament_15.jpg'));
+            readfile(URL::to('/storage_api_mabar/upload/tournament/15/image_tournament_15.jpg'));
             // readfile(storage_path($destinationPath));
         } else {
             echo "Image Not Found";
