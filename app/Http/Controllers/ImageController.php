@@ -35,6 +35,7 @@ class ImageController extends Controller
     public function showImageTournament($id, $image_id)
     {
         $destinationPath = 'app/public/upload/tournament/' . $id . '/' . $image_id;
+        dd(storage_path($destinationPath));
         if (file_exists(storage_path($destinationPath))) {
             $type = pathinfo($destinationPath, PATHINFO_EXTENSION);
             header("Content-Type: " . $type);
