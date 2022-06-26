@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\URL;
-
 class ImageController extends Controller
 {
     public function __construct()
@@ -40,9 +38,7 @@ class ImageController extends Controller
         if (file_exists(storage_path($destinationPath))) {
             $type = pathinfo($destinationPath, PATHINFO_EXTENSION);
             header("Content-Type: " . $type);
-            // storage_path($destinationPath));
-            readfile(URL::to('/storage_api_mabar/upload/tournament/15/image_tournament_15.jpg'));
-            // readfile(storage_path($destinationPath));
+            readfile(storage_path($destinationPath));
         } else {
             echo "Image Not Found";
         }

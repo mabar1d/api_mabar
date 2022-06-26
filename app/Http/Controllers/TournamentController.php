@@ -372,6 +372,7 @@ class TournamentController extends Controller
                             $image = null;
                             if ($execQuery_row->image) {
                                 $image = URL::to("/image/masterTournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
+                                $image = URL::to("/storage_api_mabar/upload/tournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
                             }
                             $title_game = NULL;
                             if (isset($execQuery_row->game_id) && $execQuery_row->game_id) {
@@ -455,6 +456,7 @@ class TournamentController extends Controller
                     }
                     if ($getInfoTournament->image) {
                         $image = URL::to("/image/masterTournament/" . $getInfoTournament->id . "/" . $getInfoTournament->image);
+                        $image = URL::to("/storage_api_mabar/upload/tournament/" . $getInfoTournament->id . "/" . $getInfoTournament->image);
                     }
                     $title_game = NULL;
                     if (isset($getInfoTournament->game_id) && $getInfoTournament->game_id) {
@@ -585,6 +587,7 @@ class TournamentController extends Controller
                     );
                     if ($queryRow->image) {
                         $data['image'] = URL::to("/image/masterTournament/" . $queryRow['id'] . "/" . $queryRow['image']);
+                        $data['image'] = URL::to("/storage_api_mabar/upload/tournament/" . $queryRow['id'] . "/" . $queryRow['image']);
                     }
                     array_push($resultData, $data);
                 }
@@ -659,6 +662,7 @@ class TournamentController extends Controller
                             $image = null;
                             if ($execQuery_row->image) {
                                 $image = URL::to("/image/masterTournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
+                                $image = URL::to("/storage_api_mabar/upload/tournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
                             }
                             $title_game = NULL;
                             if (isset($execQuery_row->game_id) && $execQuery_row->game_id) {
