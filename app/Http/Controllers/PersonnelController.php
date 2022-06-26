@@ -50,7 +50,7 @@ class PersonnelController extends Controller
                 }
                 if (isset($execQuery->image) && $execQuery->image) {
                     // $execQuery->image = URL::to("/image/personnel/" . $execQuery->user_id . "/" . $execQuery->image);
-                    $execQuery->image = URL::to("/storage_api_mabar/upload/personnel/" . $execQuery->id . "/" . $execQuery->image);
+                    $execQuery->image = URL::to("/storage_api_mabar/upload/personnel/" . $execQuery->user_id . "/" . $execQuery->image);
                 }
                 if ($execQuery) {
                     $response->code = '00';
