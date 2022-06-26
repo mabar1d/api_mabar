@@ -38,6 +38,7 @@ class ImageController extends Controller
         if (file_exists(storage_path($destinationPath))) {
             $type = pathinfo($destinationPath, PATHINFO_EXTENSION);
             header("Content-Type: " . $type);
+            dd(storage_path($destinationPath));
             file_get_contents(storage_path($destinationPath));
             // readfile(storage_path($destinationPath));
         } else {
