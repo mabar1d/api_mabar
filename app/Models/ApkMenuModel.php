@@ -12,13 +12,15 @@ class ApkMenuModel extends Model
     protected $table = 'apk_menu';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'title'
+        'title',
+        'order',
+        'status'
     ];
 
     public static function getListApkMenu($filter = NULL)
     {
         $result = array();
-        $query = ApkMenuModel::select("id", "title");
+        $query = ApkMenuModel::select("id", "title", "order");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("id", $filter["id"]);
         }
@@ -28,6 +30,7 @@ class ApkMenuModel extends Model
         if (isset($filter["status"])) {
             $query = $query->where("status", $filter["status"]);
         }
+        $query = $query->orderBy("order");
         $query = $query->get();
         if ($query->first()) {
             $result = $query->toArray();
