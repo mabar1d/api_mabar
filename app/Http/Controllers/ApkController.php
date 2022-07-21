@@ -81,7 +81,7 @@ class ApkController extends Controller
                     $response->desc = 'Get Info Master Game Success!';
                     if ($getInfoMasterGame->image) {
                         // $getInfoMasterGame->image = URL::to("/image/masterGame/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
-                        $getInfoMasterGame->image = URL::to("/storage_api_mabar/upload/masterGame/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
+                        $getInfoMasterGame->image = URL::to("/storage_api_mabar/upload/master_game/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
                     }
                     $response->data = $getInfoMasterGame;
                 } else {
