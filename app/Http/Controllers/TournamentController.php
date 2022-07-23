@@ -355,6 +355,7 @@ class TournamentController extends Controller
                         $offset = ($page - 1) * $limit;
                         $query->offset($offset);
                     }
+                    $execQuery = $query->orderBy("updated_at", "desc");
                     $execQuery = $query->limit($limit)
                         ->get();
                     if ($execQuery->first()) {
