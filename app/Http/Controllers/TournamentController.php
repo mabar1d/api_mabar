@@ -579,6 +579,7 @@ class TournamentController extends Controller
             if (!$validator->fails()) {
                 $query = MasterTournament::select('*')
                     ->where('register_date_start', '>=', date("Y-m-d"))
+                    ->orderBy('prize', 'DESC')
                     ->limit(5)
                     ->get();
                 $resultData = array();
