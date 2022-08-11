@@ -73,6 +73,20 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('getListMasterGame', 'GameController@getList');
     $router->post('getInfoMasterGame', 'GameController@getInfo');
     $router->post('uploadImageGame', 'GameController@uploadImage');
+
+    //NEWS CATEGORY
+    $router->post('createNewsCategory', 'NewsCategoryController@create');
+    $router->post('updateNewsCategory', 'NewsCategoryController@update');
+    $router->post('deleteNewsCategory', 'NewsCategoryController@delete');
+    $router->post('getListNewsCategory', 'NewsCategoryController@getList');
+    $router->post('getInfoNewsCategory', 'NewsCategoryController@getInfo');
+
+    //NEWS
+    $router->post('createNews', 'NewsController@create');
+    $router->post('updateNews', 'NewsController@update');
+    $router->post('deleteNews', 'NewsController@delete');
+    $router->post('getListNews', 'NewsController@getList');
+    $router->post('getInfoNews', 'NewsController@getInfo');
 });
 
 $router->group(['prefix' => 'image'], function ($router) {
