@@ -56,9 +56,22 @@ class NewsController extends Controller
                             'status' => $newsStatus,
                             'created_by' => $userId
                         );
-                        NewsModel::create($insertData);
+                        $created = NewsModel::create($insertData);
+                        if ($request->hasFile('image')) {
+                            $fileName = 'news_' . $created->id . '.jpg';
+                            $destinationPath = 'app/public/upload/news/';
+                            if (!file_exists(storage_path($destinationPath))) {
+                                mkdir(storage_path($destinationPath), 0775, true);
+                            }
+                            $request->file('image')->move(storage_path($destinationPath . '/'), $fileName);
+                            NewsModel::find($created->id)
+                                ->update([
+                                    'image' => $fileName
+                                ]);
+                        }
                         $response->code = '00';
                         $response->desc = 'Create News Success!';
+                        DB::commit();
                     } else {
                         $response->code = '02';
                         $response->desc = 'News Title Already Exist.';
@@ -71,7 +84,6 @@ class NewsController extends Controller
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
-            DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';
@@ -116,8 +128,21 @@ class NewsController extends Controller
                             'updated_by' => $userId
                         );
                         NewsModel::find($newsId)->update($updateData);
+                        if ($request->hasFile('image')) {
+                            $fileName = 'news_' . $newsId . '.jpg';
+                            $destinationPath = 'app/public/upload/news/';
+                            if (!file_exists(storage_path($destinationPath))) {
+                                mkdir(storage_path($destinationPath), 0775, true);
+                            }
+                            $request->file('image')->move(storage_path($destinationPath . '/'), $fileName);
+                            NewsModel::find($newsId)
+                                ->update([
+                                    'image' => $fileName
+                                ]);
+                        }
                         $response->code = '00';
                         $response->desc = 'Update News Success!';
+                        DB::commit();
                     } else {
                         $response->code = '02';
                         $response->desc = 'News Not Found.';
@@ -130,7 +155,6 @@ class NewsController extends Controller
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
-            DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';
@@ -161,6 +185,7 @@ class NewsController extends Controller
                     $deleteQuery->delete();
                     $response->code = '00';
                     $response->desc = 'Delete News Success!';
+                    DB::commit();
                 } else {
                     $response->code = '02';
                     $response->desc = 'News Not Found.';
@@ -169,7 +194,6 @@ class NewsController extends Controller
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
-            DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';
@@ -202,14 +226,23 @@ class NewsController extends Controller
                     $offset = ($page - 1) * $limit;
                 }
                 $getList = NewsModel::getListNews(array(
+                    'status' => "1",
                     'search' => $search,
                     'offset' => $offset,
                     'limit' => $limit
                 ));
                 if ($getList) {
+                    $resultData = array();
+                    foreach ($getList as $row) {
+                        if ($row['image']) {
+                            $row['image'] = URL::to("/storage_api_mabar/upload/news/" . $row['image']);
+                        }
+                        $resultData[] = $row;
+                    }
                     $response->code = '00';
                     $response->desc = 'Get List News Category Success!';
-                    $response->data = $getList;
+                    $response->data = $resultData;
+                    DB::commit();
                 } else {
                     $response->code = '02';
                     $response->desc = 'List News Category is Empty.';
@@ -218,7 +251,6 @@ class NewsController extends Controller
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
-            DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';
@@ -245,9 +277,13 @@ class NewsController extends Controller
             if (!$validator->fails()) {
                 $getInfo = NewsModel::getNews(array('id' => $newsId));
                 if ($getInfo) {
+                    if ($getInfo['image']) {
+                        $getInfo['image'] = URL::to("/storage_api_mabar/upload/news/" . $getInfo['image']);
+                    }
                     $response->code = '00';
                     $response->desc = 'Get Info News Category Success!';
                     $response->data = $getInfo;
+                    DB::commit();
                 } else {
                     $response->code = '02';
                     $response->desc = 'News Category Not Found.';
@@ -256,7 +292,6 @@ class NewsController extends Controller
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
-            DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';
@@ -296,6 +331,7 @@ class NewsController extends Controller
                         ]);
                     $response->code = '00';
                     $response->desc = 'Upload Success.';
+                    DB::commit();
                 } else {
                     $response->code = '02';
                     $response->desc = 'Has no File Uploaded.';
@@ -304,7 +340,6 @@ class NewsController extends Controller
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
-            DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';
