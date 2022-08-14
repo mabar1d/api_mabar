@@ -727,7 +727,7 @@ class TeamController extends Controller
                                 foreach ($execQuery->toArray() as $execQuery_row) {
                                     if ($execQuery_row['image']) {
                                         // $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
-                                        $execQuery_row['image'] = URL::to("/storage_api_mabar/upload/master_game/" . $execQuery_row->id . "/" . $execQuery_row->image);
+                                        $execQuery_row['image'] = URL::to("/storage_api_mabar/upload/team/" . $execQuery_row->id . "/" . $execQuery_row->image);
                                     }
                                     array_push($result, $execQuery_row);
                                 }
