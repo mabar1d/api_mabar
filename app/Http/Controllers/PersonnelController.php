@@ -568,7 +568,7 @@ class PersonnelController extends Controller
                 $query = Personnel::select('users.username', 'personnel.*', 'm_gender.gender')
                     ->leftJoin('m_gender', 'personnel.gender_id', '=', 'm_gender.gender_id')
                     ->leftJoin('users', 'personnel.user_id', '=', 'users.id')
-                    ->whereNotIn('personnel.role', array('2'))
+                    ->whereNotIn('personnel.is_verified', array('1'))
                     ->whereNull('personnel.team_id');
                 if ($search) {
                     $query->where('personnel.firstname', 'like', $search . '%')
