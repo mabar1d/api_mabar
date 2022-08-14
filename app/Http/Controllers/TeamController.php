@@ -346,7 +346,7 @@ class TeamController extends Controller
                     }
                     $responseData->admin_id = isset($getInfoTeam->admin_id) && $getInfoTeam->admin_id ? trim($getInfoTeam->admin_id) : "";
                     // $responseData->image = isset($getInfoTeam->image) && $getInfoTeam->image ? URL::to("/image/masterTeam/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']) : NULL;
-                    $responseData->image = isset($getInfoTeam->image) && $getInfoTeam->image ? URL::to("/storage_api_mabar/upload/master_game/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']) : NULL;
+                    $responseData->image = isset($getInfoTeam->image) && $getInfoTeam->image ? URL::to("/storage_api_mabar/upload/team/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']) : NULL;
                     $responseData->personnel = array();
                     $arrayPersonnelId = json_decode($getInfoTeam->personnel, true);
                     if (count($arrayPersonnelId) > 0) {
