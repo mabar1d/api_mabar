@@ -900,6 +900,7 @@ class TournamentController extends Controller
                 if ($checkDataExist) {
                     $tournamentDetail = $checkDataExist->toArray();
                     if ($tournamentDetail["id_created_by"] == $userId) {
+                        dd($tournamentDetail, date("Y/m/d"));
                         if (strtotime(date("Y/m/d")) <= strtotime($tournamentDetail["start_date"])) {
                             $getTeamTournament = TeamTournament::where("tournament_id", $tournamentId)
                                 ->where("active", 1)
