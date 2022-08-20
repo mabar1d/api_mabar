@@ -19,9 +19,6 @@ $router->get('/', function () use ($router) {
     // return $router->app->version();
     return "Welcome To The Jungle! Let's ROCK!!!!";
 });
-$router->get('/link_storage', function () {
-    Artisan::call('storage:link');
-});
 
 $router->group(['prefix' => 'api'], function ($router) {
     $router->post('logout', 'AuthController@logout');
@@ -94,14 +91,6 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('getListNews', 'NewsController@getList');
     $router->post('getInfoNews', 'NewsController@getInfo');
 });
-
-$router->group(['prefix' => 'image'], function ($router) {
-    $router->get('personnel/{id}/{image_id}', 'ImageController@showImagePersonnel');
-    $router->get('masterGame/{id}/{image_id}', 'ImageController@showImageGame');
-    $router->get('masterTeam/{id}/{image_id}', 'ImageController@showImageTeam');
-    $router->get('masterTournament/{id}/{image_id}', 'ImageController@showImageTournament');
-});
-
 
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('register', 'AuthController@register');

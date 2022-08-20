@@ -201,9 +201,9 @@ class TournamentController extends Controller
                     if ($checkTournamentExist) {
                         if ($checkTournamentExist->id_created_by == $userId) {
                             MasterTournament::where('id', $tournamentId)->delete();
-                            $destinationPath = 'app/public/upload/tournament/' . $checkTournamentExist->id . '/' . $checkTournamentExist->image;
-                            if (file_exists(storage_path($destinationPath))) {
-                                unlink(storage_path($destinationPath));
+                            $destinationPath = 'public/upload/tournament/' . $checkTournamentExist->id . '/' . $checkTournamentExist->image;
+                            if (file_exists(base_path($destinationPath))) {
+                                unlink(base_path($destinationPath));
                             }
                             $response->code = '00';
                             $response->desc = 'Delete Tournament Success!';
@@ -531,11 +531,11 @@ class TournamentController extends Controller
                 if ($checkTournament) {
                     if ($request->hasFile('image_file')) {
                         $filenameQuestion = 'image_tournament_' . $checkTournament['id'] . '.jpg';
-                        $destinationPath = 'app/public/upload/tournament/' . $checkTournament['id'];
-                        if (!file_exists(storage_path($destinationPath))) {
-                            mkdir(storage_path($destinationPath), 0775, true);
+                        $destinationPath = 'public/upload/tournament/' . $checkTournament['id'];
+                        if (!file_exists(base_path($destinationPath))) {
+                            mkdir(base_path($destinationPath), 0775, true);
                         }
-                        $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                        $request->file('image_file')->move(base_path($destinationPath . '/'), $filenameQuestion);
                         MasterTournament::where('id', $checkTournament['id'])
                             ->update([
                                 "image" => $filenameQuestion

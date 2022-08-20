@@ -59,11 +59,11 @@ class NewsController extends Controller
                         $created = NewsModel::create($insertData);
                         if ($request->hasFile('image')) {
                             $fileName = 'news_' . $created->id . '.jpg';
-                            $destinationPath = 'app/public/upload/news/';
-                            if (!file_exists(storage_path($destinationPath))) {
-                                mkdir(storage_path($destinationPath), 0775, true);
+                            $destinationPath = 'public/upload/news/';
+                            if (!file_exists(base_path($destinationPath))) {
+                                mkdir(base_path($destinationPath), 0775, true);
                             }
-                            $request->file('image')->move(storage_path($destinationPath . '/'), $fileName);
+                            $request->file('image')->move(base_path($destinationPath . '/'), $fileName);
                             NewsModel::find($created->id)
                                 ->update([
                                     'image' => $fileName
@@ -130,11 +130,11 @@ class NewsController extends Controller
                         NewsModel::find($newsId)->update($updateData);
                         if ($request->hasFile('image')) {
                             $fileName = 'news_' . $newsId . '.jpg';
-                            $destinationPath = 'app/public/upload/news/';
-                            if (!file_exists(storage_path($destinationPath))) {
-                                mkdir(storage_path($destinationPath), 0775, true);
+                            $destinationPath = 'public/upload/news/';
+                            if (!file_exists(base_path($destinationPath))) {
+                                mkdir(base_path($destinationPath), 0775, true);
                             }
-                            $request->file('image')->move(storage_path($destinationPath . '/'), $fileName);
+                            $request->file('image')->move(base_path($destinationPath . '/'), $fileName);
                             NewsModel::find($newsId)
                                 ->update([
                                     'image' => $fileName
@@ -320,11 +320,11 @@ class NewsController extends Controller
                     // $file = $request->file('image_file');
                     // $fileExtension = $file->getClientOriginalExtension();
                     $filenameQuestion = 'master_game_' . $gameId . '.jpg';
-                    $destinationPath = 'app/public/upload/masterGame/' . $gameId;
-                    if (!file_exists(storage_path($destinationPath))) {
-                        mkdir(storage_path($destinationPath), 0775, true);
+                    $destinationPath = 'public/upload/masterGame/' . $gameId;
+                    if (!file_exists(base_path($destinationPath))) {
+                        mkdir(base_path($destinationPath), 0775, true);
                     }
-                    $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                    $request->file('image_file')->move(base_path($destinationPath . '/'), $filenameQuestion);
                     MasterGame::where('id', $gameId)
                         ->update([
                             'image' => $filenameQuestion

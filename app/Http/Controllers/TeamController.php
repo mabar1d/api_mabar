@@ -637,11 +637,11 @@ class TeamController extends Controller
                             if ($request->hasFile('image_file')) {
                                 $file = $request->file('image_file');
                                 $filenameQuestion = 'image_team_' . $checkUserHasTeam->team_id . '.jpg';
-                                $destinationPath = 'app/public/upload/team/' . $checkUserHasTeam->team_id;
-                                if (!file_exists(storage_path($destinationPath))) {
-                                    mkdir(storage_path($destinationPath), 0775, true);
+                                $destinationPath = 'public/upload/team/' . $checkUserHasTeam->team_id;
+                                if (!file_exists(base_path($destinationPath))) {
+                                    mkdir(base_path($destinationPath), 0775, true);
                                 }
-                                $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                                $request->file('image_file')->move(base_path($destinationPath . '/'), $filenameQuestion);
                                 MasterTeam::where('id', $checkUserHasTeam->team_id)
                                     ->update([
                                         "image" => $filenameQuestion

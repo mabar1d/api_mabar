@@ -123,9 +123,9 @@ class GameController extends Controller
                 $checkMasterGameExist = MasterGame::where('id', $gameId)->first();
                 if ($checkMasterGameExist) {
                     // MasterGame::where('id', $gameId)->delete();
-                    $destinationPath = 'app/public/upload/masterGame/' . $gameId . '/' . $checkMasterGameExist->image;
-                    if (file_exists(storage_path($destinationPath))) {
-                        unlink(storage_path($destinationPath));
+                    $destinationPath = 'public/upload/masterGame/' . $gameId . '/' . $checkMasterGameExist->image;
+                    if (file_exists(base_path($destinationPath))) {
+                        unlink(base_path($destinationPath));
                     }
                     $response->code = '00';
                     $response->desc = 'Delete Master Game Success!';
@@ -180,7 +180,7 @@ class GameController extends Controller
                     foreach ($execQuery->toArray() as $execQuery_row) {
                         if ($execQuery_row['image']) {
                             // $execQuery_row['image'] = URL::to("/image/masterGame/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
-                            $execQuery_row['image'] = URL::to("/storage_api_mabar/upload/master_game/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                            $execQuery_row['image'] = URL::to("/upload/master_game/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
                         }
                         array_push($result, $execQuery_row);
                     }
@@ -226,7 +226,7 @@ class GameController extends Controller
                     $response->desc = 'Get Info Master Game Success!';
                     if ($getInfoMasterGame->image) {
                         // $getInfoMasterGame->image = URL::to("/image/masterGame/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
-                        $getInfoMasterGame->image = URL::to("/storage_api_mabar/upload/master_game/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
+                        $getInfoMasterGame->image = URL::to("/upload/master_game/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
                     }
                     $response->data = $getInfoMasterGame;
                 } else {
@@ -266,11 +266,11 @@ class GameController extends Controller
                     // $file = $request->file('image_file');
                     // $fileExtension = $file->getClientOriginalExtension();
                     $filenameQuestion = 'master_game_' . $gameId . '.jpg';
-                    $destinationPath = 'app/public/upload/masterGame/' . $gameId;
-                    if (!file_exists(storage_path($destinationPath))) {
-                        mkdir(storage_path($destinationPath), 0775, true);
+                    $destinationPath = 'public/upload/masterGame/' . $gameId;
+                    if (!file_exists(base_path($destinationPath))) {
+                        mkdir(base_path($destinationPath), 0775, true);
                     }
-                    $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                    $request->file('image_file')->move(base_path($destinationPath . '/'), $filenameQuestion);
                     MasterGame::where('id', $gameId)
                         ->update([
                             "image" => $filenameQuestion

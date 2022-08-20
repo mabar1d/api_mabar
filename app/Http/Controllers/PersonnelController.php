@@ -513,11 +513,11 @@ class PersonnelController extends Controller
                 if ($checkExist) {
                     if ($request->hasFile('image_file')) {
                         $filenameQuestion = 'image_person_' . $checkExist['user_id'] . '.jpg';
-                        $destinationPath = 'app/public/upload/personnel/' . $checkExist['user_id'];
-                        if (!file_exists(storage_path($destinationPath))) {
-                            mkdir(storage_path($destinationPath), 0775, true);
+                        $destinationPath = 'public/upload/personnel/' . $checkExist['user_id'];
+                        if (!file_exists(base_path($destinationPath))) {
+                            mkdir(base_path($destinationPath), 0775, true);
                         }
-                        $request->file('image_file')->move(storage_path($destinationPath . '/'), $filenameQuestion);
+                        $request->file('image_file')->move(base_path($destinationPath . '/'), $filenameQuestion);
                         Personnel::where('user_id', $checkExist['user_id'])
                             ->update([
                                 "image" => $filenameQuestion
