@@ -2,6 +2,8 @@
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
+use Illuminate\Support\Facades\Artisan;
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -12,9 +14,13 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
+
 $router->get('/', function () use ($router) {
     // return $router->app->version();
     return "Welcome To The Jungle! Let's ROCK!!!!";
+});
+$router->get('/link_storage', function () {
+    Artisan::call('storage:link');
 });
 
 $router->group(['prefix' => 'api'], function ($router) {
