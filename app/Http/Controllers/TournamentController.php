@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Models\MasterTournament;
 use App\Models\Personnel;
 use App\Models\RatingTournament;
+use App\Models\StandingTournamentMatchModel;
+use App\Models\StandingTournamentModel;
 use App\Models\TeamTournament;
 use App\Models\TreeTournamentMatchModel;
 use Illuminate\Support\Facades\DB;
@@ -1058,6 +1060,394 @@ class TournamentController extends Controller
         return response()->json($response);
     }
 
-    //TOURNAMENT STANDING
+    //TOURNAMENT STANDING (NOT YET)
+    public function randomGroupTournamentStanding(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            if (!$validator->fails()) {
+                $checkDataExist = MasterTournament::where("id", $tournamentId)
+                    ->first();
+                if ($checkDataExist) {
+                    $tournamentDetail = $checkDataExist->toArray();
+                    if ($tournamentDetail["id_created_by"] == $userId) {
+                        if (strtotime(date("Y/m/d")) <= strtotime($tournamentDetail["start_date"])) {
+                            if ($tournamentDetail["type"] == "2") {
+                                $getTeamTournament = TeamTournament::where("tournament_id", $tournamentId)
+                                    ->where("active", 1)
+                                    ->get();
+                                if ($getTeamTournament->first()) {
+                                    $getTeamTournament = $getTeamTournament->toArray();
+                                    shuffle($getTeamTournament);
+                                    $maxPerGroup = 4;
+                                    $arrayGroupResult = $arrayPerGroup = array();
+                                    $groupName = "A";
+                                    foreach ($getTeamTournament as $rowTeamTournament) {
+                                        $getTeamInfo = MasterTeam::getInfo(array("id" => $rowTeamTournament["team_id"]));
+                                        $arrayPerGroup["group"] = $groupName;
+                                        if (!isset($arrayPerGroup["team"])) {
+                                            $arrayPerGroup["team"] = array();
+                                        }
+                                        array_push($arrayPerGroup["team"], array(
+                                            "team_id" => isset($getTeamInfo["id"]) && $getTeamInfo["id"] ? $getTeamInfo["id"] : NULL,
+                                            "team_name" => isset($getTeamInfo["name"]) && $getTeamInfo["name"] ? $getTeamInfo["name"] : NULL,
+                                        ));
+                                        if (count($arrayPerGroup["team"]) == $maxPerGroup) {
+                                            array_push($arrayGroupResult, $arrayPerGroup);
+                                            $arrayPerGroup["team"] = array();
+                                            $groupName++;
+                                        }
+                                    }
+                                    array_push($arrayGroupResult, $arrayPerGroup);
+                                    $response->code = '00';
+                                    $response->desc = 'Random Tournament Match Success!';
+                                    $response->data = $arrayGroupResult;
+                                } else {
+                                    $response->code = '02';
+                                    $response->desc = "There's No Team Participants in This Tournament!";
+                                }
+                            } else {
+                                $response->code = '02';
+                                $response->desc = "Tournament Type Is Not Standing.";
+                            }
+                        } else {
+                            $response->code = '02';
+                            $response->desc = "Tournament Is Running!";
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = "You're Not Host of This Tournament!";
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = "Tournament Not Found!";
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+        } catch (Exception $e) {
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
 
+    public function setGroupTournamentStanding(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string',
+                'group_array' => 'string',
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            $GroupTournamentArray = isset($requestData['group_array']) && $requestData['group_array'] ? json_decode($requestData['group_array'], true) : NULL;
+            if (!$validator->fails()) {
+                $checkDataExist = MasterTournament::find($tournamentId)->first();
+                if ($checkDataExist) {
+                    $tournamentDetail = $checkDataExist->toArray();
+                    if ($tournamentDetail["id_created_by"] == $userId) {
+                        if (strtotime(date("Y/m/d")) < strtotime($tournamentDetail["start_date"])) {
+                            if ($tournamentDetail["type"] == "2") {
+                                foreach ($GroupTournamentArray as $rowGroupTournamentArray) {
+                                    $group = isset($rowGroupTournamentArray["group"]) && $rowGroupTournamentArray["group"] ? $rowGroupTournamentArray["group"] : NULL;
+                                    foreach ($rowGroupTournamentArray["team"] as $rowTeam) {
+                                        StandingTournamentModel::updateOrCreate(
+                                            [
+                                                'id' => NULL
+                                            ],
+                                            [
+                                                'team_id' => isset($rowTeam) && $rowTeam ? $rowTeam : NULL,
+                                                'tournament_id' => $tournamentId,
+                                                'group' => $group
+                                            ]
+                                        );
+                                    }
+                                }
+                                DB::commit();
+                                $response->code = '00';
+                                $response->desc = 'Set Tournament Group Success!';
+                            } else {
+                                $response->code = '02';
+                                $response->desc = "Tournament Type Is Not Standing.";
+                            }
+                        } else {
+                            $response->code = '02';
+                            $response->desc = "Tournament Is Running! Can't Save Group Tournament";
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = "You're Not Host of This Tournament!";
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = "Tournament Not Found!";
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+    public function getListTournamentStanding(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string',
+                'group' => 'string'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            $group = isset($requestData['group']) ? trim($requestData['group']) : NULL;
+            if (!$validator->fails()) {
+                $checkTournamentExist = MasterTournament::getInfo(array("id" => $tournamentId));
+                if ($checkTournamentExist) {
+                    if ($checkTournamentExist["type"] == "2") {
+                        $getListTournament = StandingTournamentModel::getList(array(
+                            "tournamentId" => $tournamentId,
+                            "group" => $group
+                        ));
+                        if ($getListTournament) {
+                            $result = array();
+                            foreach ($getListTournament as $rowTeamTournament) {
+                                $getInfoTeam = MasterTeam::getInfo(array("id" => $rowTeamTournament["team_id"]));
+                                $rowTeamTournament["team_name"] = isset($getInfoTeam["name"]) && $getInfoTeam["name"] ? $getInfoTeam["name"] : NULL;
+                                $result[] = $rowTeamTournament;
+                            }
+                            $response->code = '00';
+                            $response->desc = 'Success Get List Standing Tournament.';
+                            $response->data = $result;
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'List Standing Tournament Not Found.';
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Tournament Type Is Not Standing.';
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Tournament Not Found.';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+        } catch (Exception $e) {
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+
+    public function setMatchTournamentStanding(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string',
+                'match_array' => 'string',
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            $arrayMatchTournament = isset($requestData['match_array']) && $requestData['match_array'] ? json_decode($requestData['match_array'], true) : NULL;
+            if (!$validator->fails()) {
+                $checkDataExist = MasterTournament::find($tournamentId)->first();
+                if ($checkDataExist) {
+                    $tournamentDetail = $checkDataExist->toArray();
+                    if ($tournamentDetail["id_created_by"] == $userId) {
+                        if (strtotime(date("Y/m/d")) < strtotime($tournamentDetail["start_date"])) {
+                            if ($tournamentDetail["type"] == "2") {
+                                foreach ($arrayMatchTournament as $rowArrayMatchTournament) {
+                                    StandingTournamentMatchModel::updateOrCreate(
+                                        [
+                                            'id' => isset($rowArrayMatchTournament["match_id"]) && $rowArrayMatchTournament["match_id"] ? $rowArrayMatchTournament["match_id"] : NULL
+                                        ],
+                                        [
+                                            'tournament_id' => $tournamentId,
+                                            'tournament_phase' => 1,
+                                            'round' => $round,
+                                            'home_team_id' => isset($rowArrayMatchTournament["home_team_id"]) && $rowArrayMatchTournament["home_team_id"] ? $rowArrayMatchTournament["home_team_id"] : NULL,
+                                            'opponent_team_id' => isset($rowArrayMatchTournament["opponent_team_id"]) && $rowArrayMatchTournament["opponent_team_id"] ? $rowArrayMatchTournament["opponent_team_id"] : NULL,
+                                            'score_home' => NULL,
+                                            'score_opponent' => NULL
+                                        ]
+                                    );
+                                }
+                                $response->code = '00';
+                                $response->desc = 'Set Tournament Match Success!';
+                            } else {
+                                $response->code = '02';
+                                $response->desc = "Tournament Type Is Not Standing.";
+                            }
+                        } else {
+                            $response->code = '02';
+                            $response->desc = "Tournament Is Running! Can't Save Matching Tournament";
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = "You're Not Host of This Tournament!";
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = "Tournament Not Found!";
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+    public function updateScoreTournamentStanding(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'match_id' => 'required|string',
+                'home_score' => 'required|numeric',
+                'opponent_score' => 'required|numeric'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $match_id = isset($requestData['match_id']) ? trim($requestData['match_id']) : NULL;
+            $homeScore = isset($requestData['home_score']) ? trim($requestData['home_score']) : 0;
+            $opponentScore = isset($requestData['opponentScore']) ? trim($requestData['opponentScore']) : 0;
+            if (!$validator->fails()) {
+                $checkDataExist = TreeTournamentMatchModel::getInfo(array("id" => $match_id));
+                if ($checkDataExist) {
+                    $tournamentDetail = MasterTournament::getInfo(array("id" => $checkDataExist["tournament_id"]));
+                    if ($tournamentDetail["id_created_by"] == $userId) {
+                        if (strtotime(date("Y/m/d")) >= strtotime($tournamentDetail["start_date"])) {
+                            TreeTournamentMatchModel::updateOrCreate(
+                                [
+                                    'id' => isset($match_id) && $match_id ? $match_id : NULL
+                                ],
+                                [
+                                    'score_home' => $homeScore,
+                                    'score_opponent' => $opponentScore
+                                ]
+                            );
+                            $response->code = '00';
+                            $response->desc = 'Update Score Match Success!';
+                        } else {
+                            $response->code = '02';
+                            $response->desc = "Tournament Is Not Running! Can't Update Score Match";
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = "You're Not Host of This Tournament!";
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = "Match ID Not Found!";
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+    public function getListMatchTournamentStanding(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            if (!$validator->fails()) {
+                $checkTournamentExist = MasterTournament::getInfo(array("id" => $tournamentId));
+                if ($checkTournamentExist) {
+                    if ($checkTournamentExist["type"] == "2") {
+                        $getListMatch = StandingTournamentMatchModel::getList(array(
+                            "tournamentId" => $tournamentId
+                        ));
+                        if ($getListMatch) {
+                            $response->code = '00';
+                            $response->desc = 'Success Get List Standing Tournament Match.';
+                            $response->data = $getListMatch;
+                        } else {
+                            $response->code = '02';
+                            $response->desc = 'List Standing Tournament Match Not Found.';
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = 'Tournament Type Is Not Standing.';
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'Tournament Not Found.';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+        } catch (Exception $e) {
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
 }
