@@ -271,9 +271,9 @@ class TeamController extends Controller
                         if ($getTeamLeadUsername) {
                             $responseData->username_admin = isset($getTeamLeadUsername->username) && $getTeamLeadUsername->username ? trim($getTeamLeadUsername->username) : "";
                         }
-                        // $image = URL::to("/storage_api_mabar/upload/tournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
-                        $responseData->image = isset($execQuery_row->image) && $execQuery_row->image ? URL::to("/storage_api_mabar/upload/team/" . $execQuery_row['id'] . "/" . $execQuery_row['image']) : NULL;
-                        $responseData->image = isset($execQuery_row->image) && $execQuery_row->image ? URL::to("/storage_api_mabar/upload/team/" . $execQuery_row['id'] . "/" . $execQuery_row['image']) : NULL;
+                        // $image = URL::to("/upload/tournament/" . $execQuery_row->id . "/" . $execQuery_row->image);
+                        $responseData->image = isset($execQuery_row->image) && $execQuery_row->image ? URL::to("/upload/team/" . $execQuery_row['id'] . "/" . $execQuery_row['image']) : NULL;
+                        $responseData->image = isset($execQuery_row->image) && $execQuery_row->image ? URL::to("/upload/team/" . $execQuery_row['id'] . "/" . $execQuery_row['image']) : NULL;
                         $responseData->personnel = array();
                         $arrayPersonnelId = json_decode($execQuery_row->personnel, true);
                         if (count($arrayPersonnelId) > 0) {
@@ -346,7 +346,7 @@ class TeamController extends Controller
                     }
                     $responseData->admin_id = isset($getInfoTeam->admin_id) && $getInfoTeam->admin_id ? trim($getInfoTeam->admin_id) : "";
                     // $responseData->image = isset($getInfoTeam->image) && $getInfoTeam->image ? URL::to("/image/masterTeam/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']) : NULL;
-                    $responseData->image = isset($getInfoTeam->image) && $getInfoTeam->image ? URL::to("/storage_api_mabar/upload/team/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']) : NULL;
+                    $responseData->image = isset($getInfoTeam->image) && $getInfoTeam->image ? URL::to("/upload/team/" . $getInfoTeam['id'] . "/" . $getInfoTeam['image']) : NULL;
                     $responseData->personnel = array();
                     $arrayPersonnelId = json_decode($getInfoTeam->personnel, true);
                     if (count($arrayPersonnelId) > 0) {
@@ -570,7 +570,7 @@ class TeamController extends Controller
                                         'tournament_detail' => isset($tournamentInfo->detail) && $tournamentInfo->detail ? $tournamentInfo->detail : '',
                                         'tournament_prize' => isset($tournamentInfo->prize) && $tournamentInfo->prize ? $tournamentInfo->prize : '',
                                         // 'tournament_image' => isset($tournamentInfo->image) && $tournamentInfo->image ? URL::to("/image/masterTournament/" . $tournamentInfo->id . "/" . $tournamentInfo->image) : '',
-                                        'tournament_image' => isset($tournamentInfo->image) && $tournamentInfo->image ? URL::to("/storage_api_mabar/upload/tournament/" . $tournamentInfo->id . "/" . $tournamentInfo->image) : '',
+                                        'tournament_image' => isset($tournamentInfo->image) && $tournamentInfo->image ? URL::to("/upload/tournament/" . $tournamentInfo->id . "/" . $tournamentInfo->image) : '',
                                         'tournament_start_date' => isset($tournamentInfo->start_date) && $tournamentInfo->start_date ? date("d-m-Y", strtotime($tournamentInfo->start_date)) : '',
                                         'tournament_end_date' => isset($tournamentInfo->end_date) && $tournamentInfo->end_date ? date("d-m-Y", strtotime($tournamentInfo->end_date)) : '',
                                         'tournament_last_position' => isset($teamTournamentRow->last_position) && $teamTournamentRow->last_position ? $teamTournamentRow->last_position : '',
@@ -727,7 +727,7 @@ class TeamController extends Controller
                                 foreach ($execQuery->toArray() as $execQuery_row) {
                                     if ($execQuery_row['image']) {
                                         // $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
-                                        $execQuery_row['image'] = URL::to("/storage_api_mabar/upload/team/" . $execQuery_row->id . "/" . $execQuery_row->image);
+                                        $execQuery_row['image'] = URL::to("/upload/team/" . $execQuery_row->id . "/" . $execQuery_row->image);
                                     }
                                     array_push($result, $execQuery_row);
                                 }

@@ -50,7 +50,7 @@ class PersonnelController extends Controller
                 }
                 if (isset($execQuery->image) && $execQuery->image) {
                     // $execQuery->image = URL::to("/image/personnel/" . $execQuery->user_id . "/" . $execQuery->image);
-                    $execQuery->image = URL::to("/storage_api_mabar/upload/personnel/" . $execQuery->user_id . "/" . $execQuery->image);
+                    $execQuery->image = URL::to("/upload/personnel/" . $execQuery->user_id . "/" . $execQuery->image);
                 }
                 if ($execQuery) {
                     $response->code = '00';
@@ -110,7 +110,7 @@ class PersonnelController extends Controller
                         $execQuery_row['birthdate'] = !empty($execQuery_row['birthdate']) ? date('d-m-Y', strtotime(trim($execQuery_row['birthdate']))) : NULL;
                         if (isset($execQuery_row['image']) && $execQuery_row['image']) {
                             // $execQuery_row['image'] = URL::to("/image/personnel/" . $execQuery_row['user_id'] . "/" . $execQuery_row['image']);
-                            $execQuery_row['image'] = URL::to("/storage_api_mabar/upload/personnel/" . $execQuery_row['user_id'] . "/" . $execQuery_row['image']);
+                            $execQuery_row['image'] = URL::to("/upload/personnel/" . $execQuery_row['user_id'] . "/" . $execQuery_row['image']);
                         }
                         array_push($result, $execQuery_row);
                     }
@@ -587,7 +587,7 @@ class PersonnelController extends Controller
                         $execQuery_row['birthdate'] = !empty($execQuery_row['birthdate']) ? date('d-m-Y', strtotime(trim($execQuery_row['birthdate']))) : NULL;
                         if (isset($execQuery_row['image']) && $execQuery_row['image']) {
                             // $execQuery_row['image'] = URL::to("/image/personnel/" . $execQuery_row['user_id'] . "/" . $execQuery_row['image']);
-                            $execQuery_row['image'] = URL::to("/storage_api_mabar/upload/personnel/" . $execQuery_row['user_id'] . "/" . $execQuery_row['image']);
+                            $execQuery_row['image'] = URL::to("/upload/personnel/" . $execQuery_row['user_id'] . "/" . $execQuery_row['image']);
                         }
                         array_push($result, $execQuery_row);
                     }

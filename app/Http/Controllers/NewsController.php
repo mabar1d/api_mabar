@@ -235,7 +235,7 @@ class NewsController extends Controller
                     $resultData = array();
                     foreach ($getList as $row) {
                         if ($row['image']) {
-                            $row['image'] = URL::to("/storage_api_mabar/upload/news/" . $row['image']);
+                            $row['image'] = URL::to("/upload/news/" . $row['image']);
                         }
                         $resultData[] = $row;
                     }
@@ -278,7 +278,7 @@ class NewsController extends Controller
                 $getInfo = NewsModel::getNews(array('id' => $newsId));
                 if ($getInfo) {
                     if ($getInfo['image']) {
-                        $getInfo['image'] = URL::to("/storage_api_mabar/upload/news/" . $getInfo['image']);
+                        $getInfo['image'] = URL::to("/upload/news/" . $getInfo['image']);
                     }
                     $response->code = '00';
                     $response->desc = 'Get Info News Category Success!';
