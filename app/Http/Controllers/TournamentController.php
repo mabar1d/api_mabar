@@ -384,6 +384,21 @@ class TournamentController extends Controller
                             if ($getPersonnel) {
                                 $created_name = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
                             }
+                            $teamInThisTournament = array();
+                            $getTeamInThisTournamentArray = TeamTournament::where("tournament_id", $execQuery_row->id)->get();
+                            if ($getTeamInThisTournamentArray) {
+                                $getTeamInThisTournamentArray = $getTeamInThisTournamentArray->toArray();
+                                foreach ($getTeamInThisTournamentArray as $rowTeamThisTournament) {
+                                    $getTeamInfo = MasterTeam::find($rowTeamThisTournament["id"]);
+                                    if ($getTeamInfo) {
+                                        $getTeamInfo = $getTeamInfo->toArray();
+                                        $teamInThisTournament[] = array(
+                                            "team_id" => $getTeamInfo["id"],
+                                            "team_name" => $getTeamInfo["name"]
+                                        );
+                                    }
+                                }
+                            }
 
                             $data = new stdClass;
                             $data->id = isset($execQuery_row->id) && $execQuery_row->id ? trim($execQuery_row->id) : NULL;
@@ -403,6 +418,7 @@ class TournamentController extends Controller
                             $data->game_id = isset($execQuery_row->game_id) && $execQuery_row->game_id ? trim($execQuery_row->game_id) : NULL;
                             $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
                             $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
+                            $data->team_in_tournament = $teamInThisTournament;
                             array_push($result, $data);
                         }
                         $response->code = '00';
@@ -469,6 +485,22 @@ class TournamentController extends Controller
                         $created_name = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
                     }
 
+                    $teamInThisTournament = array();
+                    $getTeamInThisTournamentArray = TeamTournament::where("tournament_id", $getInfoTournament->id)->get();
+                    if ($getTeamInThisTournamentArray) {
+                        $getTeamInThisTournamentArray = $getTeamInThisTournamentArray->toArray();
+                        foreach ($getTeamInThisTournamentArray as $rowTeamThisTournament) {
+                            $getTeamInfo = MasterTeam::find($rowTeamThisTournament["id"]);
+                            if ($getTeamInfo) {
+                                $getTeamInfo = $getTeamInfo->toArray();
+                                $teamInThisTournament[] = array(
+                                    "team_id" => $getTeamInfo["id"],
+                                    "team_name" => $getTeamInfo["name"]
+                                );
+                            }
+                        }
+                    }
+
                     $data = new stdClass;
                     $data->id = isset($getInfoTournament->id) && $getInfoTournament->id ? trim($getInfoTournament->id) : NULL;
                     $data->name = isset($getInfoTournament->name) && $getInfoTournament->name ? trim($getInfoTournament->name) : NULL;
@@ -487,6 +519,7 @@ class TournamentController extends Controller
                     $data->game_id = isset($getInfoTournament->game_id) && $getInfoTournament->game_id ? trim($getInfoTournament->game_id) : NULL;
                     $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
                     $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
+                    $data->team_in_tournament = $teamInThisTournament;
 
                     $response->code = '00';
                     $response->desc = 'Get Info Tournament Success!';
@@ -674,6 +707,21 @@ class TournamentController extends Controller
                             if ($getPersonnel) {
                                 $created_name = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
                             }
+                            $teamInThisTournament = array();
+                            $getTeamInThisTournamentArray = TeamTournament::where("tournament_id", $execQuery_row->id)->get();
+                            if ($getTeamInThisTournamentArray) {
+                                $getTeamInThisTournamentArray = $getTeamInThisTournamentArray->toArray();
+                                foreach ($getTeamInThisTournamentArray as $rowTeamThisTournament) {
+                                    $getTeamInfo = MasterTeam::find($rowTeamThisTournament["id"]);
+                                    if ($getTeamInfo) {
+                                        $getTeamInfo = $getTeamInfo->toArray();
+                                        $teamInThisTournament[] = array(
+                                            "team_id" => $getTeamInfo["id"],
+                                            "team_name" => $getTeamInfo["name"]
+                                        );
+                                    }
+                                }
+                            }
 
                             $data = new stdClass;
                             $data->id = isset($execQuery_row->id) && $execQuery_row->id ? trim($execQuery_row->id) : NULL;
@@ -693,6 +741,7 @@ class TournamentController extends Controller
                             $data->game_id = isset($execQuery_row->game_id) && $execQuery_row->game_id ? trim($execQuery_row->game_id) : NULL;
                             $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
                             $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
+                            $data->team_in_tournament = $teamInThisTournament;
                             array_push($result, $data);
                         }
                         $response->code = '00';

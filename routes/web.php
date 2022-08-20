@@ -60,9 +60,12 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('uploadImageTournament', 'TournamentController@uploadImage');
     $router->post('getCarouselTournament', 'TournamentController@getCarouselTournament');
     $router->post('getListMyTournament', 'TournamentController@getListMyTournament');
+    //TOURNAMENT TREE
     $router->post('getTournamentTreeWeb', 'TournamentController@getTournamentTreeWeb');
     $router->post('setMatchTournament', 'TournamentController@setMatchTournament');
     $router->post('randomMatchTournament', 'TournamentController@randomMatchTournament');
+    // TOURNAMENT GROUP
+
 
     //RATING TOURNAMENT
     $router->post('giveRatingTournament', 'RatingTournamentController@create');
