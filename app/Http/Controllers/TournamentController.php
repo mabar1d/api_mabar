@@ -932,10 +932,9 @@ class TournamentController extends Controller
                                 $response->data = $resultArray;
                             } else {
                                 $response->code = '02';
-                                $response->desc = "Tournament Is Running!";
+                                $response->desc = "There's No Team Participants in This Tournament!";
                             }
                         } else {
-                            dd("test");
                             $response->code = '02';
                             $response->desc = "Tournament Is Running!";
                         }
