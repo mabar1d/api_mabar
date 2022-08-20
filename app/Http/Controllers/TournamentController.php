@@ -7,10 +7,10 @@ use App\Models\MasterGame;
 use App\Models\MasterTeam;
 use Illuminate\Http\Request;
 use App\Models\MasterTournament;
-use App\Models\MatchTournament;
 use App\Models\Personnel;
 use App\Models\RatingTournament;
 use App\Models\TeamTournament;
+use App\Models\TreeTournamentMatchModel;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 use Illuminate\Support\Facades\Validator;
@@ -769,6 +769,7 @@ class TournamentController extends Controller
         return response()->json($response);
     }
 
+    //TOURNAMENT TREE
     public function getTournamentTreeWeb(Request $request)
     {
         $response = new stdClass();
@@ -812,7 +813,7 @@ class TournamentController extends Controller
         return response()->json($response);
     }
 
-    public function setMatchTournament(Request $request)
+    public function setMatchTournamentTree(Request $request)
     {
         $response = new stdClass();
         $response->code = '';
@@ -837,7 +838,7 @@ class TournamentController extends Controller
                             $round = 0;
                             foreach ($arrayMatchTournament as $rowArrayMatchTournament) {
                                 $round++;
-                                MatchTournament::updateOrCreate(
+                                TreeTournamentMatchModel::updateOrCreate(
                                     [
                                         'id' => isset($rowArrayMatchTournament["match_id"]) && $rowArrayMatchTournament["match_id"] ? $rowArrayMatchTournament["match_id"] : NULL
                                     ],
@@ -880,7 +881,7 @@ class TournamentController extends Controller
         return response()->json($response);
     }
 
-    public function randomMatchTournament(Request $request)
+    public function randomMatchTournamentTree(Request $request)
     {
         $response = new stdClass();
         $response->code = '';
@@ -956,4 +957,107 @@ class TournamentController extends Controller
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
+
+    public function updateScoreTournamentTree(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'match_id' => 'required|string',
+                'home_score' => 'required|numeric',
+                'opponent_score' => 'required|numeric'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $match_id = isset($requestData['match_id']) ? trim($requestData['match_id']) : NULL;
+            $homeScore = isset($requestData['home_score']) ? trim($requestData['home_score']) : 0;
+            $opponentScore = isset($requestData['opponentScore']) ? trim($requestData['opponentScore']) : 0;
+            if (!$validator->fails()) {
+                $checkDataExist = TreeTournamentMatchModel::getInfo(array("id" => $match_id));
+                if ($checkDataExist) {
+                    $tournamentDetail = MasterTournament::getInfo(array("id" => $checkDataExist["tournament_id"]));
+                    if ($tournamentDetail["id_created_by"] == $userId) {
+                        if (strtotime(date("Y/m/d")) >= strtotime($tournamentDetail["start_date"])) {
+                            TreeTournamentMatchModel::updateOrCreate(
+                                [
+                                    'id' => isset($match_id) && $match_id ? $match_id : NULL
+                                ],
+                                [
+                                    'score_home' => $homeScore,
+                                    'score_opponent' => $opponentScore
+                                ]
+                            );
+                            $response->code = '00';
+                            $response->desc = 'Update Score Match Success!';
+                        } else {
+                            $response->code = '02';
+                            $response->desc = "Tournament Is Not Running! Can't Update Score Match";
+                        }
+                    } else {
+                        $response->code = '02';
+                        $response->desc = "You're Not Host of This Tournament!";
+                    }
+                } else {
+                    $response->code = '02';
+                    $response->desc = "Match ID Not Found!";
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+    public function getListMatchTournamentTree(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'tournament_id' => 'required|string'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
+            $phase = isset($requestData['phase']) ? trim($requestData['phase']) : 1;
+            if (!$validator->fails()) {
+                $getListMatch = TreeTournamentMatchModel::getList(array(
+                    "tournamentId" => $tournamentId,
+                    "tournamentPhase" => $phase
+                ));
+                if ($getListMatch) {
+                    $response->code = '00';
+                    $response->desc = 'Success Get List Tree Tournament Match.';
+                    $response->data = $getListMatch;
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'List Tree Tournament Match Not Found.';
+                }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+        } catch (Exception $e) {
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+    //TOURNAMENT STANDING
+
 }

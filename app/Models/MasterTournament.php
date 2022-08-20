@@ -26,4 +26,32 @@ class MasterTournament extends Model
         'image'
     ];
     protected $hidden = array('created_at', 'updated_at');
+
+    public static function getInfo($filter = NULL)
+    {
+        $result = array();
+        $query = MasterTournament::select('*');
+        if (isset($filter["id"]) && $filter["id"]) {
+            $query = $query->where("id", $filter["id"]);
+        }
+        $query = $query->first();
+        if ($query) {
+            $result = $query->toArray();
+        }
+        return $result;
+    }
+
+    public static function getList($filter = NULL)
+    {
+        $result = array();
+        $query = MasterTournament::select('*');
+        if (isset($filter["id"]) && $filter["id"]) {
+            $query = $query->where("id", $filter["id"]);
+        }
+        $query = $query->get();
+        if ($query) {
+            $result = $query->toArray();
+        }
+        return $result;
+    }
 }
