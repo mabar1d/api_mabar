@@ -928,7 +928,7 @@ class TournamentController extends Controller
                                     array_push($resultArray, $matching);
                                 }
                                 $response->code = '00';
-                                $response->desc = 'Set Tournament Match Success!';
+                                $response->desc = 'Random Tournament Match Success!';
                                 $response->data = $resultArray;
                             } else {
                                 $response->code = '02';
