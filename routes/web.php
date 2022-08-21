@@ -21,6 +21,7 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => 'api'], function ($router) {
+    $router->post('checkTokenExpired', 'AuthController@checkTokenExpired');
     $router->post('logout', 'AuthController@logout');
     $router->post('refresh', 'AuthController@refresh');
     $router->get('profile', 'AuthController@userProfile');

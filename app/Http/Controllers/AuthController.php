@@ -195,4 +195,25 @@ class AuthController extends Controller
         }
         return response()->json($response);
     }
+
+    public function checkTokenExpired()
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        try {
+            $checkToken = JWTAuth::parseToken()->check();
+            if ($checkToken) {
+                $response->code = '00';
+                $response->desc = 'Get User Profile Success!';
+            } else {
+                $response->code = '401';
+                $response->desc = 'Token Expired, Please Refresh Token!';
+            }
+        } catch (Exception $e) {
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        return response()->json($response);
+    }
 }
