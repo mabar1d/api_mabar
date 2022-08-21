@@ -71,7 +71,8 @@ $router->group(['prefix' => 'api'], function ($router) {
     // $router->post('setMatchTournamentStanding', 'TournamentController@setMatchTournamentStanding');
     $router->post('randomGroupTournamentStanding', 'TournamentController@randomGroupTournamentStanding');
     $router->post('setGroupTournamentStanding', 'TournamentController@setGroupTournamentStanding');
-    $router->post('getListTournamentStanding', 'TournamentController@getListTournamentStanding');
+    $router->post('getInfoTournamentStanding', 'TournamentController@getInfoTournamentStanding');
+    $router->post('getInfoTeamTournamentStanding', 'TournamentController@getInfoTeamTournamentStanding');
 
 
     //RATING TOURNAMENT

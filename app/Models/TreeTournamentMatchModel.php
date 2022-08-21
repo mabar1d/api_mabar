@@ -18,6 +18,7 @@ class TreeTournamentMatchModel extends Model
         'opponent_team_id',
         'score_home',
         'score_opponent',
+        'playing_date'
     ];
     protected $hidden = array('created_at', 'updated_at');
 
