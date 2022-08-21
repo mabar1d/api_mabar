@@ -205,7 +205,7 @@ class AuthController extends Controller
             $checkToken = JWTAuth::parseToken()->check();
             if ($checkToken) {
                 $response->code = '00';
-                $response->desc = 'Get User Profile Success!';
+                $response->desc = 'Token Still Exist!';
             } else {
                 $response->code = '401';
                 $response->desc = 'Token Expired, Please Refresh Token!';
