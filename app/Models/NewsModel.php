@@ -111,7 +111,7 @@ class NewsModel extends Model
     public static function getListNewsDetail($filter = NULL)
     {
         $result = array();
-        $query = NewsModel::select("news.*", "personnel.first_name", "personnel.last_name");
+        $query = NewsModel::select("news.*", "personnel.firstname", "personnel.lastname");
         $query = $query->leftJoin("personnel", "news.created_by", "=", "personnel.user_id");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("news.id", $filter["id"]);
