@@ -225,7 +225,7 @@ class NewsController extends Controller
                 if ($page > 1) {
                     $offset = ($page - 1) * $limit;
                 }
-                $getList = NewsModel::getListNews(array(
+                $getList = NewsModel::getListNewsDetail(array(
                     'status' => "1",
                     'search' => $search,
                     'offset' => $offset,
