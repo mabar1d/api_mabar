@@ -185,8 +185,8 @@ class NewsCategoryController extends Controller
                     "limit" => $limit
                 ));
                 if ($getList) {
-                    $getList["next_page"] = $page++;
-                    $getList["previous_page"] = $page--;
+                    $getList["next_page"] = $page + 1;
+                    $getList["previous_page"] = $page - 1;
                     $response->code = '00';
                     $response->desc = 'Get List News Category Success!';
                     $response->data = $getList;
