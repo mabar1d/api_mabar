@@ -171,7 +171,7 @@ class NewsCategoryController extends Controller
                 'page' => 'numeric'
             ]);
             $search = isset($requestData['search']) && $requestData['search'] ? trim($requestData['search']) : NULL;
-            $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
+            $page = (int) !empty($requestData['page']) ? trim($requestData['page']) : 0;
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
                 $offset = 0;
