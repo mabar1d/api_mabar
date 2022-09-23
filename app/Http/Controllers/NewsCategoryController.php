@@ -171,7 +171,7 @@ class NewsCategoryController extends Controller
                 'page' => 'numeric'
             ]);
             $search = isset($requestData['search']) && $requestData['search'] ? trim($requestData['search']) : NULL;
-            $page = (int) !empty($requestData['page']) ? trim($requestData['page']) : 0;
+            $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
                 $offset = 0;
@@ -185,8 +185,6 @@ class NewsCategoryController extends Controller
                     "limit" => $limit
                 ));
                 if ($getList) {
-                    $getList["next_page"] = $page + 1;
-                    $getList["previous_page"] = $page - 1;
                     $response->code = '00';
                     $response->desc = 'Get List News Category Success!';
                     $response->data = $getList;
