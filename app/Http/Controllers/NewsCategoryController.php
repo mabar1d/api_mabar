@@ -184,14 +184,9 @@ class NewsCategoryController extends Controller
                     "offset" => $offset,
                     "limit" => $limit
                 ));
-                if ($getList) {
-                    $response->code = '00';
-                    $response->desc = 'Get List News Category Success!';
-                    $response->data = $getList;
-                } else {
-                    $response->code = '02';
-                    $response->desc = 'List News Category is Empty.';
-                }
+                $response->code = '00';
+                $response->desc = 'Get List News Category Success!';
+                $response->data = $getList;
             } else {
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
