@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\MasterGame;
 use App\Models\NewsCategoryModel;
 use App\Models\NewsModel;
+use DateTime;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 use Illuminate\Support\Facades\Validator;
@@ -231,22 +232,37 @@ class NewsController extends Controller
                     'offset' => $offset,
                     'limit' => $limit
                 ));
-                if ($getList) {
-                    $resultData = array();
-                    foreach ($getList as $row) {
-                        if ($row['image']) {
-                            $row['image'] = URL::to("/upload/news/" . $row['image']);
-                        }
-                        $resultData[] = $row;
+                // if ($getList) {
+                $resultData = array();
+                foreach ($getList as $row) {
+                    if ($row['image']) {
+                        $row['image'] = URL::to("/upload/news/" . $row['image']);
                     }
-                    $response->code = '00';
-                    $response->desc = 'Get List News Category Success!';
-                    $response->data = $resultData;
-                    DB::commit();
-                } else {
-                    $response->code = '02';
-                    $response->desc = 'List News Category is Empty.';
+                    $datetime1 = new DateTime(date($row['created_at']));
+                    $datetime2 = new DateTime(date("Y-m-d H:i:s"));
+                    $interval = $datetime1->diff($datetime2);
+                    $minutes = $interval->format('%i');
+                    $hours = $interval->format('%h');
+                    $days = $interval->format('%a');
+                    // dd($datetime1, $datetime2, $minutes, $hours, $days);
+                    if ($days >= 1) {
+                        $diffTime = $days . " days ago";
+                    } else if ($hours < 24) {
+                        $diffTime = $hours . " hours ago";
+                    } else {
+                        $diffTime = $minutes . " minutes ago";
+                    }
+                    $row['diffCreatedAt'] = $diffTime;
+                    $resultData[] = $row;
                 }
+                $response->code = '00';
+                $response->desc = 'Get List News Success!';
+                $response->data = $resultData;
+                DB::commit();
+                // } else {
+                //     $response->code = '02';
+                //     $response->desc = 'List News is Empty.';
+                // }
             } else {
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
