@@ -25,6 +25,24 @@ class NewsController extends Controller
         }
     }
 
+    static function getDiffCreatedAt($createdAt)
+    {
+        $datetime1 = new DateTime(date("Y-m-d H:i:s", strtotime($createdAt)));
+        $datetime2 = new DateTime(date("Y-m-d H:i:s"));
+        $interval = $datetime1->diff($datetime2);
+        $minutes = $interval->format('%i');
+        $hours = $interval->format('%h');
+        $days = $interval->format('%a');
+        if ($days >= 1) {
+            $diffTime = $days . " days ago";
+        } else if ($hours > 0 && $hours < 24) {
+            $diffTime = $hours . " hours ago";
+        } else {
+            $diffTime = $minutes . " minutes ago";
+        }
+        return $diffTime;
+    }
+
     public function create(Request $request)
     {
         $response = new stdClass();
@@ -238,21 +256,7 @@ class NewsController extends Controller
                     if ($row['image']) {
                         $row['image'] = URL::to("/upload/news/" . $row['image']);
                     }
-                    $datetime1 = new DateTime(date($row['created_at']));
-                    $datetime2 = new DateTime(date("Y-m-d H:i:s"));
-                    $interval = $datetime1->diff($datetime2);
-                    $minutes = $interval->format('%i');
-                    $hours = $interval->format('%h');
-                    $days = $interval->format('%a');
-                    // dd($datetime1, $datetime2, $minutes, $hours, $days);
-                    if ($days >= 1) {
-                        $diffTime = $days . " days ago";
-                    } else if ($hours < 24) {
-                        $diffTime = $hours . " hours ago";
-                    } else {
-                        $diffTime = $minutes . " minutes ago";
-                    }
-                    $row['diffCreatedAt'] = $diffTime;
+                    $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
                     $resultData[] = $row;
                 }
                 $response->code = '00';
@@ -296,6 +300,7 @@ class NewsController extends Controller
                     if ($getInfo['image']) {
                         $getInfo['image'] = URL::to("/upload/news/" . $getInfo['image']);
                     }
+                    $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
                     $response->code = '00';
                     $response->desc = 'Get Info News Category Success!';
                     $response->data = $getInfo;
