@@ -132,8 +132,9 @@ class NewsModel extends Model
     public static function getNewsDetail($filter = NULL)
     {
         $result = array();
-        $query = NewsModel::select("news.*", "personnel.firstname", "personnel.lastname");
+        $query = NewsModel::select("news.*", "news_category.name as news_category_name", "personnel.firstname", "personnel.lastname");
         $query = $query->leftJoin("personnel", "news.created_by", "=", "personnel.user_id");
+        $query = $query->leftJoin("news_category", "news.news_category_id", "=", "news_category.id");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("news.id", $filter["id"]);
         }
@@ -159,8 +160,9 @@ class NewsModel extends Model
     public static function getListNewsDetail($filter = NULL)
     {
         $result = array();
-        $query = NewsModel::select("news.*", "personnel.firstname", "personnel.lastname");
+        $query = NewsModel::select("news.*", "news_category.name as news_category_name", "personnel.firstname", "personnel.lastname");
         $query = $query->leftJoin("personnel", "news.created_by", "=", "personnel.user_id");
+        $query = $query->leftJoin("news_category", "news.news_category_id", "=", "news_category.id");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("news.id", $filter["id"]);
         }
