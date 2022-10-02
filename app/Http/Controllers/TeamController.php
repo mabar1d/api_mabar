@@ -131,7 +131,9 @@ class TeamController extends Controller
                     ->where('role', '2')
                     ->first();
                 if ($checkPersonnelRole) {
-                    $checkTeamExist = MasterTeam::where('id', $teamId)->first();
+                    $checkTeamExist = MasterTeam::where('id', $teamId)
+                        ->where('admin_id', $userId)
+                        ->first();
                     if ($checkTeamExist) {
                         $checkGame = MasterGame::where("id", $gameId)->first();
                         if ($checkGame) {
@@ -148,7 +150,6 @@ class TeamController extends Controller
                                 'team_id' => $teamId
                             );
                             Personnel::whereIn('user_id', $teamPersonnel)->update($updatePersonnelTeam);
-
                             $response->code = '00';
                             $response->desc = 'Update Team Success!';
                         } else {
@@ -157,7 +158,7 @@ class TeamController extends Controller
                         }
                     } else {
                         $response->code = '02';
-                        $response->desc = 'Team Not Found.';
+                        $response->desc = 'You Not Have Access in This Team.';
                     }
                 } else {
                     $response->code = '02';

@@ -61,6 +61,9 @@ class NewsModel extends Model
         if (isset($filter["title"]) && $filter["title"]) {
             $query = $query->where("title", $filter["title"]);
         }
+        if (isset($filter["slug"]) && $filter["slug"]) {
+            $query = $query->where("slug", $filter["slug"]);
+        }
         if (isset($filter["status"]) && $filter["status"]) {
             $query = $query->where("status", $filter["status"]);
         }
@@ -77,6 +80,9 @@ class NewsModel extends Model
         }
         if (isset($filter["title"]) && $filter["title"]) {
             $query = $query->where("title", $filter["title"]);
+        }
+        if (isset($filter["slug"]) && $filter["slug"]) {
+            $query = $query->where("slug", $filter["slug"]);
         }
         if (isset($filter["status"]) && $filter["status"]) {
             $query = $query->where("status", $filter["status"]);
@@ -103,6 +109,9 @@ class NewsModel extends Model
         }
         if (isset($filter["status"]) && $filter["status"]) {
             $query = $query->where("status", $filter["status"]);
+        }
+        if (isset($filter["slug"]) && $filter["slug"]) {
+            $query = $query->where("slug", $filter["slug"]);
         }
         if (isset($filter["search"]) && $filter["search"]) {
             $query = $query->where("title", 'like', $filter["search"] . '%');
@@ -134,6 +143,9 @@ class NewsModel extends Model
         if (isset($filter["status"]) && $filter["status"]) {
             $query = $query->where("news.status", $filter["status"]);
         }
+        if (isset($filter["slug"]) && $filter["slug"]) {
+            $query = $query->where("news.slug", $filter["slug"]);
+        }
         if (isset($filter["search"]) && $filter["search"]) {
             $query = $query->where("news.title", 'like', $filter["search"] . '%');
         }
@@ -154,6 +166,9 @@ class NewsModel extends Model
         }
         if (isset($filter["title"]) && $filter["title"]) {
             $query = $query->where("news.title", $filter["title"]);
+        }
+        if (isset($filter["slug"]) && $filter["slug"]) {
+            $query = $query->where("news.slug", $filter["slug"]);
         }
         if (isset($filter["status"]) && $filter["status"]) {
             $query = $query->where("news.status", $filter["status"]);
