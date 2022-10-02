@@ -257,6 +257,7 @@ class NewsController extends Controller
                         $row['image'] = URL::to("/upload/news/" . $row['image']);
                     }
                     $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
+                    $row['linkShare'] = env("WEB_DOMAIN") . "/news/" . $row["slug"];
                     $resultData[] = $row;
                 }
                 $response->code = '00';
@@ -301,6 +302,7 @@ class NewsController extends Controller
                         $getInfo['image'] = URL::to("/upload/news/" . $getInfo['image']);
                     }
                     $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
+                    $getInfo['linkShare'] = env("WEB_DOMAIN") . "/news/" . $getInfo["slug"];
                     $response->code = '00';
                     $response->desc = 'Get Info News Category Success!';
                     $response->data = $getInfo;
