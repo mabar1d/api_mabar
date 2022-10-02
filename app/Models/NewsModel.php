@@ -108,6 +108,30 @@ class NewsModel extends Model
         return $result;
     }
 
+    public static function getNewsDetail($filter = NULL)
+    {
+        $result = array();
+        $query = NewsModel::select("news.*", "personnel.firstname", "personnel.lastname");
+        $query = $query->leftJoin("personnel", "news.created_by", "=", "personnel.user_id");
+        if (isset($filter["id"]) && $filter["id"]) {
+            $query = $query->where("news.id", $filter["id"]);
+        }
+        if (isset($filter["title"]) && $filter["title"]) {
+            $query = $query->where("news.title", $filter["title"]);
+        }
+        if (isset($filter["status"]) && $filter["status"]) {
+            $query = $query->where("news.status", $filter["status"]);
+        }
+        if (isset($filter["search"]) && $filter["search"]) {
+            $query = $query->where("news.title", 'like', $filter["search"] . '%');
+        }
+        $query = $query->first();
+        if ($query) {
+            $result = $query->toArray();
+        }
+        return $result;
+    }
+
     public static function getListNewsDetail($filter = NULL)
     {
         $result = array();

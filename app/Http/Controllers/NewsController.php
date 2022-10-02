@@ -291,7 +291,7 @@ class NewsController extends Controller
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $newsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
             if (!$validator->fails()) {
-                $getInfo = NewsModel::getNews(array('id' => $newsId));
+                $getInfo = NewsModel::getNewsDetail(array('id' => $newsId));
                 if ($getInfo) {
                     if ($getInfo['image']) {
                         $getInfo['image'] = URL::to("/upload/news/" . $getInfo['image']);
