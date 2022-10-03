@@ -291,12 +291,17 @@ class NewsController extends Controller
         try {
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
-                'news_id' => 'required|string',
+                'news_id' => 'string',
+                'slug' => 'string',
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $newsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
+            $slug = isset($requestData['slug']) ? trim($requestData['slug']) : NULL;
             if (!$validator->fails()) {
-                $getInfo = NewsModel::getNewsDetail(array('id' => $newsId));
+                $getInfo = array();
+                if ($newsId || $slug) {
+                    $getInfo = NewsModel::getNewsDetail(array('id' => $newsId, 'slug' => $slug));
+                }
                 if ($getInfo) {
                     if ($getInfo['image']) {
                         $getInfo['image'] = URL::to("/upload/news/" . $getInfo['image']);
@@ -304,12 +309,12 @@ class NewsController extends Controller
                     $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
                     $getInfo['linkShare'] = env("WEB_DOMAIN") . "/news/" . $getInfo["slug"];
                     $response->code = '00';
-                    $response->desc = 'Get Info News Category Success!';
+                    $response->desc = 'Get Info News Success!';
                     $response->data = $getInfo;
                     DB::commit();
                 } else {
                     $response->code = '02';
-                    $response->desc = 'News Category Not Found.';
+                    $response->desc = 'News Not Found.';
                 }
             } else {
                 $response->code = '01';
