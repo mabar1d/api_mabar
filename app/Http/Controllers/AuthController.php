@@ -92,16 +92,29 @@ class AuthController extends Controller
             $validator = Validator::make($requestData, [
                 'username' => 'required|string',
                 'password' => 'required|string|min:6',
+                'token_firebase' => 'string',
             ]);
-
+            $requestData = $request->input();
+            $username = isset($requestData["username"]) && $requestData["username"] ? trim($requestData["username"]) : NULL;
+            $password = isset($requestData["password"]) && $requestData["password"] ? trim($requestData["password"]) : NULL;
+            $tokenFirebase = isset($requestData["token_firebase"]) && $requestData["token_firebase"] ? trim($requestData["token_firebase"]) : NULL;
             if (!$validator->fails()) {
-                if ($token = auth()->attempt($validator->validated())) {
+                if ($token = auth()->attempt(array("username" => $username, "password" => $password))) {
                     $responseData = array(
                         'access_token' => $token,
                         'token_type' => 'bearer',
                         'expires_in' => auth()->factory()->getTTL() . ' minute',
                         'user' => auth()->user()
                     );
+                    $updateToken = array();
+                    $updateToken["token_jwt"] = $token;
+                    if ($tokenFirebase) {
+                        $updateToken["token_firebase"] = $token;
+                    }
+                    User::where("id", auth()->user()->id)
+                        ->update(
+                            $updateToken
+                        );
                     $response->code = '00';
                     $response->desc = 'Login Success!';
                     $response->data = $responseData;

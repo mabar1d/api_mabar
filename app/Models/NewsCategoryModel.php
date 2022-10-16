@@ -14,6 +14,7 @@ class NewsCategoryModel extends Model
     protected $table = 'news_category';
     protected $primaryKey = 'id';
     protected $fillable = [
+        'parent_id',
         'name',
         'desc',
         'status',

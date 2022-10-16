@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\MasterGame;
 use App\Models\NewsCategoryModel;
 use App\Models\NewsModel;
+use App\Models\NewsTagModel;
+use App\Models\NewsWithTagModel;
+use App\Models\TagModel;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -23,6 +26,39 @@ class NewsController extends Controller
         if ($token != env('GOD_BEARER')) {
             $this->middleware('auth:api');
         }
+    }
+
+    function sendPush($to, $title, $body, $icon, $url)
+    {
+        $postdata = json_encode(
+            [
+                'notification' =>
+                [
+                    'title' => $title,
+                    'body' => $body,
+                    'icon' => $icon,
+                    'click_action' => $url
+                ],
+                'to' => $to
+            ]
+        );
+
+        $post = array(
+            'http' =>
+            array(
+                'method'  => 'POST',
+                'header'  => 'Content-type: application/json' . "\r\n"
+                    . 'Authorization: key=AAAAhTq3pao:APA91bFlQBDVnB3r9FGGPhsWH3648q1SuBJhspzcz_KSfRTULex35bkT7YbY5eKtKjdKx5rfFCiZVCIPOPdI1y4q7GXOHZNimn-Cw0zo0LZKIw6hLRrC6WwYgrQxsmpgW4ErheKFJlYF' . "\r\n",
+                'content' => $postdata
+            )
+        );
+
+        $context  = stream_context_create($post);
+
+        $result = file_get_contents('https://fcm.googleapis.com/fcm/send', false, $context);
+        if ($result) {
+            return json_decode($result);
+        } else return false;
     }
 
     static function getDiffCreatedAt($createdAt)
@@ -62,6 +98,7 @@ class NewsController extends Controller
             $newsTitle = isset($requestData['title']) ? trim($requestData['title']) : NULL;
             $newsContent = isset($requestData['content']) ? trim($requestData['content']) : NULL;
             $newsStatus = isset($requestData['status']) ? trim($requestData['status']) : 0;
+            $newsTag = isset($requestData['tag']) ? trim($requestData['tag']) : NULL;
             if (!$validator->fails()) {
                 $countCategoryNews = NewsCategoryModel::countNewsCategory(array('id' => $newsCategoryId));
                 if ($countCategoryNews > 0) {
@@ -76,18 +113,46 @@ class NewsController extends Controller
                             'created_by' => $userId
                         );
                         $created = NewsModel::create($insertData);
+                        $createdNewsId = $created->id;
                         if ($request->hasFile('image')) {
-                            $fileName = 'news_' . $created->id . '.jpg';
+                            $fileName = 'news_' . $createdNewsId . '.jpg';
                             $destinationPath = 'public/upload/news/';
                             if (!file_exists(base_path($destinationPath))) {
                                 mkdir(base_path($destinationPath), 0775, true);
                             }
                             $request->file('image')->move(base_path($destinationPath . '/'), $fileName);
-                            NewsModel::find($created->id)
+                            NewsModel::find($createdNewsId)
                                 ->update([
                                     'image' => $fileName
                                 ]);
                         }
+                        if ($newsTagArray = json_decode($newsTag)) {
+                            if (is_array($newsTagArray)) {
+                                $insertNewsWithTag = array();
+                                foreach ($newsTagArray as $rowNewsTag) {
+                                    $getNewsTag = NewsTagModel::getRow(array("name" => strtolower($rowNewsTag)));
+                                    if (!$getNewsTag) {
+                                        $createdNewsTag = NewsTagModel::create([
+                                            "name" => strtolower($rowNewsTag)
+                                        ]);
+                                    }
+                                    $newsTagId = isset($getNewsTag["id"]) ? $getNewsTag["id"] : $createdNewsTag->id;
+                                    $insertNewsWithTag[] = array(
+                                        "news_id" => $newsId,
+                                        "news_tag_id" => $newsTagId
+                                    );
+                                }
+                                NewsWithTagModel::insert($insertNewsWithTag);
+                            }
+                        }
+
+                        // $keyClient = "dYCWuwRPAiQB2VRxyfnxPG:APA91bFe3adAHF-Kq2z47TWkry5MLceM3BtLYMbTEF3ajUaQKqsjpIhWSqpqau1bMDB3hbhL7E-My6qyHaIyGLausVT8XfJpzzgQo1hy7red79Znih5XK1nu5jc5QBwvSjEqBKtQlAEf";
+                        // $titleFirebase = "title dari api";
+                        // $bodyFirebase = "body dari api";
+                        // $imgFirebase = "https://circlegames.id/img/CG.gif";
+                        // $urlFirebase = "https://circlegames.id/";
+                        // $test = $this->sendPush($keyClient, $titleFirebase, $bodyFirebase, $imgFirebase, $urlFirebase);
+                        // dd($test);
                         $response->code = '00';
                         $response->desc = 'Create News Success!';
                         DB::commit();
@@ -128,11 +193,12 @@ class NewsController extends Controller
                 'status' => 'required|string'
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-            $newsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
+            $newsId = isset($requestData['news_id']) ? (int) trim($requestData['news_id']) : NULL;
             $newsCategoryId = isset($requestData['news_category_id']) ? trim($requestData['news_category_id']) : NULL;
             $newsTitle = isset($requestData['title']) ? trim($requestData['title']) : NULL;
             $newsContent = isset($requestData['content']) ? trim($requestData['content']) : NULL;
             $newsStatus = isset($requestData['status']) ? trim($requestData['status']) : 0;
+            $newsTag = isset($requestData['tag']) ? trim($requestData['tag']) : NULL;
             if (!$validator->fails()) {
                 $countCategoryNews = NewsCategoryModel::countNewsCategory(array('id' => $newsCategoryId));
                 if ($countCategoryNews > 0) {
@@ -158,6 +224,29 @@ class NewsController extends Controller
                                 ->update([
                                     'image' => $fileName
                                 ]);
+                        }
+                        if ($newsTagArray = json_decode($newsTag)) {
+                            if (is_array($newsTagArray)) {
+                                $arrayNewsTagId = array();
+                                foreach ($newsTagArray as $rowNewsTag) {
+                                    $getNewsTag = NewsTagModel::getRow(array("name" => strtolower($rowNewsTag)));
+                                    if (!$getNewsTag) {
+                                        $createdNewsTag = NewsTagModel::create([
+                                            "name" => strtolower($rowNewsTag)
+                                        ]);
+                                    }
+                                    $newsTagId = isset($getNewsTag["id"]) ? (int)$getNewsTag["id"] : (int)$createdNewsTag->id;
+                                    $arrayNewsTagId[] = $newsTagId;
+                                    $insertNewsWithTag = array(
+                                        "news_id" => $newsId,
+                                        "news_tag_id" => $newsTagId
+                                    );
+                                    NewsWithTagModel::updateOrcreate($insertNewsWithTag);
+                                }
+
+                                //delete all news tag where not in update tag in table news_with_tag
+                                NewsWithTagModel::where("news_id", $newsId)->whereNotIn("news_tag_id", $arrayNewsTagId)->delete();
+                            }
                         }
                         $response->code = '00';
                         $response->desc = 'Update News Success!';
@@ -258,6 +347,14 @@ class NewsController extends Controller
                     }
                     $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
                     $row['linkShare'] = env("WEB_DOMAIN") . "/news/" . $row["slug"];
+
+                    //start get news tag
+                    $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $row["id"]));
+                    foreach ($getNewsTag as $newsTag) {
+                        $row['tag'][] = $newsTag["name"];
+                    }
+                    //end get news tag
+
                     $resultData[] = $row;
                 }
                 $response->code = '00';
@@ -308,6 +405,12 @@ class NewsController extends Controller
                     }
                     $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
                     $getInfo['linkShare'] = env("WEB_DOMAIN") . "/news/" . $getInfo["slug"];
+                    //start get news tag
+                    $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $getInfo["id"]));
+                    foreach ($getNewsTag as $newsTag) {
+                        $getInfo['tag'][] = $newsTag["name"];
+                    }
+                    //end get news tag
                     $response->code = '00';
                     $response->desc = 'Get Info News Success!';
                     $response->data = $getInfo;
