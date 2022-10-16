@@ -349,6 +349,7 @@ class NewsController extends Controller
                     $row['linkShare'] = env("WEB_DOMAIN") . "/news/" . $row["slug"];
 
                     //start get news tag
+                    $getInfo['tag'] = array();
                     $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $row["id"]));
                     foreach ($getNewsTag as $newsTag) {
                         $row['tag'][] = $newsTag["name"];
@@ -406,6 +407,7 @@ class NewsController extends Controller
                     $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
                     $getInfo['linkShare'] = env("WEB_DOMAIN") . "/news/" . $getInfo["slug"];
                     //start get news tag
+                    $getInfo['tag'] = array();
                     $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $getInfo["id"]));
                     foreach ($getNewsTag as $newsTag) {
                         $getInfo['tag'][] = $newsTag["name"];
