@@ -110,7 +110,7 @@ class AuthController extends Controller
                     $updateToken = array();
                     $updateToken["token_jwt"] = $token;
                     if ($tokenFirebase) {
-                        $updateToken["token_firebase"] = $token;
+                        $updateToken["token_firebase"] = $tokenFirebase;
                     }
                     User::where("id", auth()->user()->id)
                         ->update(
