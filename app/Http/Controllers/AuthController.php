@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LogApi;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Personnel;
@@ -132,6 +133,7 @@ class AuthController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
+        LogApi::createLog(auth()->user()->id, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 

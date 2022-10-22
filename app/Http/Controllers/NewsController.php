@@ -9,7 +9,6 @@ use App\Models\NewsCategoryModel;
 use App\Models\NewsModel;
 use App\Models\NewsTagModel;
 use App\Models\NewsWithTagModel;
-use App\Models\TagModel;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -138,7 +137,7 @@ class NewsController extends Controller
                                     }
                                     $newsTagId = isset($getNewsTag["id"]) ? $getNewsTag["id"] : $createdNewsTag->id;
                                     $insertNewsWithTag[] = array(
-                                        "news_id" => $newsId,
+                                        "news_id" => $createdNewsId,
                                         "news_tag_id" => $newsTagId
                                     );
                                 }
