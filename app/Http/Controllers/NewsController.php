@@ -279,7 +279,7 @@ class NewsController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($requestData, [
-                'user_id' => 'required|string',
+                'user_id' => 'string',
                 'search' => 'string',
                 'page' => 'numeric'
             ]);
@@ -347,7 +347,7 @@ class NewsController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($requestData, [
-                'user_id' => 'required|string',
+                'user_id' => 'string',
                 'news_id' => 'string',
                 'slug' => 'string',
             ]);
