@@ -26,6 +26,9 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('refresh', 'AuthController@refresh');
     $router->get('profile', 'AuthController@userProfile');
 
+    //APP VERSION
+    $router->post('checkVersionApk', 'ApkController@checkVersionApk');
+
     //PERSONNEL
     $router->post('getPersonnel', 'PersonnelController@getPersonnel');
     $router->post('getListPersonnel', 'PersonnelController@getListPersonnel');
@@ -74,7 +77,6 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('setGroupTournamentStanding', 'TournamentController@setGroupTournamentStanding');
     $router->post('getInfoTournamentStanding', 'TournamentController@getInfoTournamentStanding');
     $router->post('getInfoTeamTournamentStanding', 'TournamentController@getInfoTeamTournamentStanding');
-
 
     //RATING TOURNAMENT
     $router->post('giveRatingTournament', 'RatingTournamentController@create');
