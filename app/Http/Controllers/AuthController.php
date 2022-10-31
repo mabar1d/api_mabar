@@ -96,6 +96,7 @@ class AuthController extends Controller
                 'token_firebase' => 'string',
             ]);
             $requestData = $request->input();
+            $userId = NULL;
             $username = isset($requestData["username"]) && $requestData["username"] ? trim($requestData["username"]) : NULL;
             $password = isset($requestData["password"]) && $requestData["password"] ? trim($requestData["password"]) : NULL;
             $tokenFirebase = isset($requestData["token_firebase"]) && $requestData["token_firebase"] ? trim($requestData["token_firebase"]) : NULL;
@@ -116,6 +117,7 @@ class AuthController extends Controller
                         ->update(
                             $updateToken
                         );
+                    $userId = auth()->user()->id;
                     $response->code = '00';
                     $response->desc = 'Login Success!';
                     $response->data = $responseData;
@@ -133,7 +135,7 @@ class AuthController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
-        LogApi::createLog(auth()->user()->id, $request->path(), json_encode($requestData), json_encode($response));
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 

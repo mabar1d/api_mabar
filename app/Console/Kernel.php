@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        Commands\SendingFirebase::class
     ];
 
     /**
@@ -24,6 +24,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //
+        if (env('APP_ENV') == 'local') {
+            $schedule->command('send:notifFirebase')->everyMinute();
+        } elseif (env('APP_ENV') == 'production') {
+            $schedule->command('send:notifFirebase')->everyMinute();
+        }
     }
 }

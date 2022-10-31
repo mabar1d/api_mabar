@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FcmFirebase;
 use App\Models\LogApi;
 use Illuminate\Http\Request;
 use App\Models\MasterGame;
@@ -25,39 +26,6 @@ class NewsController extends Controller
         if ($token != env('GOD_BEARER')) {
             $this->middleware('auth:api');
         }
-    }
-
-    function sendPush($to, $title, $body, $icon, $url)
-    {
-        $postdata = json_encode(
-            [
-                'notification' =>
-                [
-                    'title' => $title,
-                    'body' => $body,
-                    'icon' => $icon,
-                    'click_action' => $url
-                ],
-                'to' => $to
-            ]
-        );
-
-        $post = array(
-            'http' =>
-            array(
-                'method'  => 'POST',
-                'header'  => 'Content-type: application/json' . "\r\n"
-                    . 'Authorization: key=AAAAhTq3pao:APA91bFlQBDVnB3r9FGGPhsWH3648q1SuBJhspzcz_KSfRTULex35bkT7YbY5eKtKjdKx5rfFCiZVCIPOPdI1y4q7GXOHZNimn-Cw0zo0LZKIw6hLRrC6WwYgrQxsmpgW4ErheKFJlYF' . "\r\n",
-                'content' => $postdata
-            )
-        );
-
-        $context  = stream_context_create($post);
-
-        $result = file_get_contents('https://fcm.googleapis.com/fcm/send', false, $context);
-        if ($result) {
-            return json_decode($result);
-        } else return false;
     }
 
     static function getDiffCreatedAt($createdAt)
@@ -144,14 +112,6 @@ class NewsController extends Controller
                                 NewsWithTagModel::insert($insertNewsWithTag);
                             }
                         }
-
-                        // $keyClient = "dYCWuwRPAiQB2VRxyfnxPG:APA91bFe3adAHF-Kq2z47TWkry5MLceM3BtLYMbTEF3ajUaQKqsjpIhWSqpqau1bMDB3hbhL7E-My6qyHaIyGLausVT8XfJpzzgQo1hy7red79Znih5XK1nu5jc5QBwvSjEqBKtQlAEf";
-                        // $titleFirebase = "title dari api";
-                        // $bodyFirebase = "body dari api";
-                        // $imgFirebase = "https://circlegames.id/img/CG.gif";
-                        // $urlFirebase = "https://circlegames.id/";
-                        // $test = $this->sendPush($keyClient, $titleFirebase, $bodyFirebase, $imgFirebase, $urlFirebase);
-                        // dd($test);
                         $response->code = '00';
                         $response->desc = 'Create News Success!';
                         DB::commit();
