@@ -104,6 +104,13 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('deleteNews', 'NewsController@delete');
     $router->post('getListNews', 'NewsController@getList');
     $router->post('getInfoNews', 'NewsController@getInfo');
+
+    //VIDEO
+    $router->post('createVideo', 'VideoController@create');
+    $router->post('updateVideo', 'VideoController@update');
+    $router->post('deleteVideo', 'VideoController@delete');
+    $router->post('getListVideo', 'VideoController@getList');
+    $router->post('getInfoVideo', 'VideoController@getInfo');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {

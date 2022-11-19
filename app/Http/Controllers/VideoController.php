@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\FcmFirebase;
 use App\Models\LogApi;
 use Illuminate\Http\Request;
 use App\Models\MasterGame;
-use App\Models\NewsCategoryModel;
-use App\Models\NewsModel;
+use App\Models\VideoModel;
 use App\Models\TagModel;
-use App\Models\NewsWithTagModel;
+use App\Models\VideoWithTagModel;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 use stdClass;
@@ -18,7 +16,7 @@ use Exception;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
-class NewsController extends Controller
+class VideoController extends Controller
 {
     public function __construct(Request $request)
     {
@@ -56,72 +54,54 @@ class NewsController extends Controller
         try {
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
-                'news_category_id' => 'required|string',
                 'title' => 'required|string',
                 'status' => 'required|string'
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-            $newsCategoryId = isset($requestData['news_category_id']) ? trim($requestData['news_category_id']) : NULL;
-            $newsTitle = isset($requestData['title']) ? trim($requestData['title']) : NULL;
-            $newsContent = isset($requestData['content']) ? trim($requestData['content']) : NULL;
-            $newsStatus = isset($requestData['status']) ? trim($requestData['status']) : 0;
-            $newsTag = isset($requestData['tag']) ? trim($requestData['tag']) : NULL;
+            $videoTitle = isset($requestData['title']) ? trim($requestData['title']) : NULL;
+            $videoContent = isset($requestData['content']) ? trim($requestData['content']) : NULL;
+            $videoLink = isset($requestData['link']) ? trim($requestData['link']) : NULL;
+            $videoStatus = isset($requestData['status']) ? trim($requestData['status']) : 0;
+            $videoTag = isset($requestData['tag']) ? trim($requestData['tag']) : NULL;
+            // dd($requestData);
             if (!$validator->fails()) {
-                $countCategoryNews = NewsCategoryModel::countNewsCategory(array('id' => $newsCategoryId));
-                if ($countCategoryNews > 0) {
-                    $countNews = NewsModel::countNews(array('title' => $newsTitle));
-                    if ($countNews == 0) {
-                        $insertData = array(
-                            'news_category_id' => $newsCategoryId,
-                            'title' => $newsTitle,
-                            'slug' => Str::slug($newsTitle),
-                            'content' => $newsContent,
-                            'status' => $newsStatus,
-                            'created_by' => $userId
-                        );
-                        $created = NewsModel::create($insertData);
-                        $createdNewsId = $created->id;
-                        if ($request->hasFile('image')) {
-                            $fileName = 'news_' . $createdNewsId . '.jpg';
-                            $destinationPath = 'public/upload/news/';
-                            if (!file_exists(base_path($destinationPath))) {
-                                mkdir(base_path($destinationPath), 0775, true);
-                            }
-                            $request->file('image')->move(base_path($destinationPath . '/'), $fileName);
-                            NewsModel::find($createdNewsId)
-                                ->update([
-                                    'image' => $fileName
-                                ]);
-                        }
-                        if ($newsTagArray = json_decode($newsTag)) {
-                            if (is_array($newsTagArray)) {
-                                $insertNewsWithTag = array();
-                                foreach ($newsTagArray as $rowNewsTag) {
-                                    $getNewsTag = TagModel::getRow(array("name" => strtolower($rowNewsTag)));
-                                    if (!$getNewsTag) {
-                                        $createdNewsTag = TagModel::create([
-                                            "name" => strtolower($rowNewsTag)
-                                        ]);
-                                    }
-                                    $newsTagId = isset($getNewsTag["id"]) ? $getNewsTag["id"] : $createdNewsTag->id;
-                                    $insertNewsWithTag[] = array(
-                                        "news_id" => $createdNewsId,
-                                        "news_tag_id" => $newsTagId
-                                    );
+                $countVideo = VideoModel::countVideo(array('title' => $videoTitle));
+                if ($countVideo == 0) {
+                    $insertData = array(
+                        'title' => $videoTitle,
+                        'slug' => Str::slug($videoTitle),
+                        'content' => $videoContent,
+                        'link' => $videoLink,
+                        'status' => $videoStatus,
+                        'created_by' => $userId
+                    );
+                    $created = VideoModel::create($insertData);
+                    $createdVideoId = $created->video_id;
+                    if ($videoTagArray = json_decode($videoTag)) {
+                        if (is_array($videoTagArray)) {
+                            $insertVideoWithTag = array();
+                            foreach ($videoTagArray as $rowNewsTag) {
+                                $getNewsTag = TagModel::getRow(array("name" => strtolower($rowNewsTag)));
+                                if (!$getNewsTag) {
+                                    $createdNewsTag = TagModel::create([
+                                        "name" => strtolower($rowNewsTag)
+                                    ]);
                                 }
-                                NewsWithTagModel::insert($insertNewsWithTag);
+                                $videoTagId = isset($getNewsTag["id"]) ? $getNewsTag["id"] : $createdNewsTag->id;
+                                $insertVideoWithTag[] = array(
+                                    "video_id" => $createdVideoId,
+                                    "tag_id" => $videoTagId
+                                );
                             }
+                            VideoWithTagModel::insert($insertVideoWithTag);
                         }
-                        $response->code = '00';
-                        $response->desc = 'Create News Success!';
-                        DB::commit();
-                    } else {
-                        $response->code = '02';
-                        $response->desc = 'News Title Already Exist.';
                     }
+                    $response->code = '00';
+                    $response->desc = 'Create Video Success!';
+                    DB::commit();
                 } else {
                     $response->code = '02';
-                    $response->desc = 'News Category Not Found.';
+                    $response->desc = 'Video Title Already Exist.';
                 }
             } else {
                 $response->code = '01';
@@ -146,77 +126,61 @@ class NewsController extends Controller
         try {
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
-                'news_id' => 'required|string',
-                'news_category_id' => 'required|string',
+                'video_id' => 'required|string',
                 'title' => 'required|string',
                 'status' => 'required|string'
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-            $newsId = isset($requestData['news_id']) ? (int) trim($requestData['news_id']) : NULL;
-            $newsCategoryId = isset($requestData['news_category_id']) ? trim($requestData['news_category_id']) : NULL;
-            $newsTitle = isset($requestData['title']) ? trim($requestData['title']) : NULL;
-            $newsContent = isset($requestData['content']) ? trim($requestData['content']) : NULL;
-            $newsStatus = isset($requestData['status']) ? trim($requestData['status']) : 0;
-            $newsTag = isset($requestData['tag']) ? trim($requestData['tag']) : NULL;
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $videoId = isset($requestData['video_id']) ? trim($requestData['video_id']) : NULL;
+            $videoTitle = isset($requestData['title']) ? trim($requestData['title']) : NULL;
+            $videoContent = isset($requestData['content']) ? trim($requestData['content']) : NULL;
+            $videoLink = isset($requestData['link']) ? trim($requestData['link']) : NULL;
+            $videoStatus = isset($requestData['status']) ? trim($requestData['status']) : 0;
+            $videoTag = isset($requestData['tag']) ? trim($requestData['tag']) : NULL;
             if (!$validator->fails()) {
-                $countCategoryNews = NewsCategoryModel::countNewsCategory(array('id' => $newsCategoryId));
-                if ($countCategoryNews > 0) {
-                    $countNews = NewsModel::countNews(array('id' => $newsId));
-                    if ($countNews > 0) {
-                        $updateData = array(
-                            'news_category_id' => $newsCategoryId,
-                            'title' => $newsTitle,
-                            'slug' => Str::slug($newsTitle),
-                            'content' => $newsContent,
-                            'status' => $newsStatus,
-                            'updated_by' => $userId
-                        );
-                        NewsModel::find($newsId)->update($updateData);
-                        if ($request->hasFile('image')) {
-                            $fileName = 'news_' . $newsId . '.jpg';
-                            $destinationPath = 'public/upload/news/';
-                            if (!file_exists(base_path($destinationPath))) {
-                                mkdir(base_path($destinationPath), 0775, true);
-                            }
-                            $request->file('image')->move(base_path($destinationPath . '/'), $fileName);
-                            NewsModel::find($newsId)
-                                ->update([
-                                    'image' => $fileName
-                                ]);
-                        }
-                        if ($newsTagArray = json_decode($newsTag)) {
-                            if (is_array($newsTagArray)) {
-                                $arrayNewsTagId = array();
-                                foreach ($newsTagArray as $rowNewsTag) {
-                                    $getNewsTag = TagModel::getRow(array("name" => strtolower($rowNewsTag)));
-                                    if (!$getNewsTag) {
-                                        $createdNewsTag = TagModel::create([
-                                            "name" => strtolower($rowNewsTag)
-                                        ]);
-                                    }
-                                    $newsTagId = isset($getNewsTag["id"]) ? (int)$getNewsTag["id"] : (int)$createdNewsTag->id;
-                                    $arrayNewsTagId[] = $newsTagId;
-                                    $insertNewsWithTag = array(
-                                        "news_id" => $newsId,
-                                        "news_tag_id" => $newsTagId
-                                    );
-                                    NewsWithTagModel::updateOrcreate($insertNewsWithTag);
+                $countVideo = VideoModel::countVideo(array('id' => $videoId));
+                if ($countVideo > 0) {
+                    $updateData = array(
+                        'title' => $videoTitle,
+                        'slug' => Str::slug($videoTitle),
+                        'content' => $videoContent,
+                        'link' => $videoLink,
+                        'status' => $videoStatus,
+                        'updated_by' => $userId
+                    );
+                    VideoModel::find($videoId)->update($updateData);
+                    if ($videoTagArray = json_decode($videoTag)) {
+                        if (is_array($videoTagArray)) {
+                            $arrayVideoTagId = array();
+                            foreach ($videoTagArray as $rowNewsTag) {
+                                $getNewsTag = TagModel::getRow(array("name" => strtolower($rowNewsTag)));
+                                if (!$getNewsTag) {
+                                    $createdNewsTag = TagModel::create([
+                                        "name" => strtolower($rowNewsTag)
+                                    ]);
                                 }
-
-                                //delete all news tag where not in update tag in table news_with_tag
-                                NewsWithTagModel::where("news_id", $newsId)->whereNotIn("news_tag_id", $arrayNewsTagId)->delete();
+                                $videoTagId = isset($getNewsTag["id"]) ? (int)$getNewsTag["id"] : (int)$createdNewsTag->id;
+                                $arrayVideoTagId[] = $videoTagId;
+                                $insertVideoWithTag = array(
+                                    "video_id" => $videoId,
+                                    "tag_id" => $videoTagId
+                                );
+                                VideoWithTagModel::updateOrcreate($insertVideoWithTag);
                             }
+                            //delete all Video tag where not in update tag in table news_with_tag
+                            VideoWithTagModel::where("video_id", $videoId)->whereNotIn("tag_id", $arrayVideoTagId)->delete();
                         }
-                        $response->code = '00';
-                        $response->desc = 'Update News Success!';
-                        DB::commit();
                     } else {
-                        $response->code = '02';
-                        $response->desc = 'News Not Found.';
+                        //delete all Video tag
+                        VideoWithTagModel::where("video_id", $videoId)->delete();
                     }
+                    $response->code = '00';
+                    $response->desc = 'Update Video Success!';
+                    DB::commit();
                 } else {
                     $response->code = '02';
-                    $response->desc = 'News Category Not Found.';
+                    $response->desc = 'Video Not Found.';
                 }
             } else {
                 $response->code = '01';
@@ -241,21 +205,21 @@ class NewsController extends Controller
         try {
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
-                'news_id' => 'required|string',
+                'video_id' => 'required|string',
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-            $newsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
+            $videoId = isset($requestData['video_id']) ? trim($requestData['video_id']) : NULL;
             if (!$validator->fails()) {
-                $checkExist = NewsModel::countNews(array('id' => $newsId));
+                $checkExist = VideoModel::countVideo(array('id' => $videoId));
                 if ($checkExist) {
-                    $deleteQuery = NewsModel::find($newsId);
+                    $deleteQuery = VideoModel::find($videoId);
                     $deleteQuery->delete();
                     $response->code = '00';
-                    $response->desc = 'Delete News Success!';
+                    $response->desc = 'Delete Video Success!';
                     DB::commit();
                 } else {
                     $response->code = '02';
-                    $response->desc = 'News Not Found.';
+                    $response->desc = 'Video Not Found.';
                 }
             } else {
                 $response->code = '01';
@@ -292,39 +256,43 @@ class NewsController extends Controller
                 if ($page > 1) {
                     $offset = ($page - 1) * $limit;
                 }
-                $getList = NewsModel::getListNewsDetail(array(
+                $getList = VideoModel::getListVideoDetail(array(
                     'status' => "1",
                     'search' => $search,
                     'offset' => $offset,
                     'limit' => $limit
                 ));
-                // if ($getList) {
-                $resultData = array();
-                foreach ($getList as $row) {
-                    if ($row['image']) {
-                        $row['image'] = URL::to("/upload/news/" . $row['image']);
-                    }
-                    $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
-                    $row['linkShare'] = env("WEB_DOMAIN") . "/news/" . $row["slug"];
+                if ($getList) {
+                    $resultData = array();
+                    foreach ($getList as $row) {
+                        if (isset($row['image']) && $row['image']) {
+                            $row['image'] = URL::to("/upload/video/" . $row['image']);
+                        }
+                        if (isset($row['link']) && $row['link']) {
+                            $row['link'] = env("WEB_YOUTUBE") . "/" . $row['link'];
+                        }
 
-                    //start get news tag
-                    $getInfo['tag'] = array();
-                    $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $row["id"]));
-                    foreach ($getNewsTag as $newsTag) {
-                        $row['tag'][] = $newsTag["name"];
-                    }
-                    //end get news tag
+                        $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
+                        $row['linkShare'] = env("WEB_DOMAIN") . "/video/" . $row["slug"];
 
-                    $resultData[] = $row;
+                        //start get Video tag
+                        $row['tag'] = array();
+                        $getNewsTag = VideoWithTagModel::getListJoinVideoTag(array("videoId" => (int) $row["video_id"]));
+                        foreach ($getNewsTag as $videoTag) {
+                            $row['tag'][] = $videoTag["name"];
+                        }
+                        //end get Video tag
+
+                        $resultData[] = $row;
+                    }
+                    $response->code = '00';
+                    $response->desc = 'Get List Video Success!';
+                    $response->data = $resultData;
+                    DB::commit();
+                } else {
+                    $response->code = '02';
+                    $response->desc = 'List Video is Empty.';
                 }
-                $response->code = '00';
-                $response->desc = 'Get List News Success!';
-                $response->data = $resultData;
-                DB::commit();
-                // } else {
-                //     $response->code = '02';
-                //     $response->desc = 'List News is Empty.';
-                // }
             } else {
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
@@ -348,37 +316,40 @@ class NewsController extends Controller
         try {
             $validator = Validator::make($requestData, [
                 'user_id' => 'string',
-                'news_id' => 'string',
+                'video_id' => 'string',
                 'slug' => 'string',
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-            $newsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
+            $videoId = isset($requestData['video_id']) ? trim($requestData['video_id']) : NULL;
             $slug = isset($requestData['slug']) ? trim($requestData['slug']) : NULL;
             if (!$validator->fails()) {
                 $getInfo = array();
-                if ($newsId || $slug) {
-                    $getInfo = NewsModel::getNewsDetail(array('id' => $newsId, 'slug' => $slug));
+                if ($videoId || $slug) {
+                    $getInfo = VideoModel::getVideoDetail(array('id' => $videoId, 'slug' => $slug));
                 }
                 if ($getInfo) {
-                    if ($getInfo['image']) {
-                        $getInfo['image'] = URL::to("/upload/news/" . $getInfo['image']);
+                    if (isset($getInfo['image']) && $getInfo['image']) {
+                        $getInfo['image'] = URL::to("/upload/video/" . $getInfo['image']);
+                    }
+                    if (isset($getInfo['link']) && $getInfo['link']) {
+                        $getInfo['link'] = env("WEB_YOUTUBE") . "/" . $getInfo['link'];
                     }
                     $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
-                    $getInfo['linkShare'] = env("WEB_DOMAIN") . "/news/" . $getInfo["slug"];
-                    //start get news tag
+                    $getInfo['linkShare'] = env("WEB_DOMAIN") . "/video/" . $getInfo["slug"];
+                    //start get Video tag
                     $getInfo['tag'] = array();
-                    $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $getInfo["id"]));
-                    foreach ($getNewsTag as $newsTag) {
-                        $getInfo['tag'][] = $newsTag["name"];
+                    $getNewsTag = VideoWithTagModel::getListJoinVideoTag(array("videoId" => (int) $getInfo["video_id"]));
+                    foreach ($getNewsTag as $videoTag) {
+                        $getInfo['tag'][] = $videoTag["name"];
                     }
-                    //end get news tag
+                    //end get Video tag
                     $response->code = '00';
-                    $response->desc = 'Get Info News Success!';
+                    $response->desc = 'Get Info Video Success!';
                     $response->data = $getInfo;
                     DB::commit();
                 } else {
                     $response->code = '02';
-                    $response->desc = 'News Not Found.';
+                    $response->desc = 'Video Not Found.';
                 }
             } else {
                 $response->code = '01';

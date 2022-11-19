@@ -6,16 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class NewsWithTagModel extends Model
+class VideoWithTagModel extends Model
 {
     use HasFactory;
     // use SoftDeletes;
 
-    protected $table = 'news_with_tag';
-    protected $primaryKey = 'id';
+    protected $table = 'video_with_tag';
+    protected $primaryKey = 'video_tag_id';
     protected $fillable = [
-        'news_id',
-        'news_tag_id',
+        'video_id',
+        'tag_id',
         'created_by',
         'updated_by'
     ];
@@ -39,9 +39,9 @@ class NewsWithTagModel extends Model
     public static function getCount($filter = NULL)
     {
         $result = 0;
-        $query = NewsWithTagModel::select("id");
-        if (isset($filter["newsId"]) && $filter["newsId"]) {
-            $query = $query->where("news_id", $filter["newsId"]);
+        $query = VideoWithTagModel::select("video_tag_ids");
+        if (isset($filter["videoId"]) && $filter["videoId"]) {
+            $query = $query->where("video_id", $filter["videoId"]);
         }
         if (isset($filter["tagId"]) && $filter["tagId"]) {
             $query = $query->where("tag_id", $filter["tagId"]);
@@ -53,9 +53,9 @@ class NewsWithTagModel extends Model
     public static function getRow($filter = NULL)
     {
         $result = array();
-        $query = NewsWithTagModel::select("*");
-        if (isset($filter["newsId"]) && $filter["newsId"]) {
-            $query = $query->where("news_id", $filter["newsId"]);
+        $query = VideoWithTagModel::select("*");
+        if (isset($filter["videoId"]) && $filter["videoId"]) {
+            $query = $query->where("video_id", $filter["videoId"]);
         }
         if (isset($filter["tagId"]) && $filter["tagId"]) {
             $query = $query->where("tag_id", $filter["tagId"]);
@@ -70,9 +70,9 @@ class NewsWithTagModel extends Model
     public static function getList($filter = NULL)
     {
         $result = array();
-        $query = NewsWithTagModel::select("*");
-        if (isset($filter["newsId"]) && $filter["newsId"]) {
-            $query = $query->where("news_id", $filter["newsId"]);
+        $query = VideoWithTagModel::select("*");
+        if (isset($filter["videoId"]) && $filter["videoId"]) {
+            $query = $query->where("video_id", $filter["videoId"]);
         }
         if (isset($filter["tagId"]) && $filter["tagId"]) {
             $query = $query->where("tag_id", $filter["tagId"]);
@@ -90,16 +90,16 @@ class NewsWithTagModel extends Model
         return $result;
     }
 
-    public static function getListJoinNewsTag($filter = NULL)
+    public static function getListJoinVideoTag($filter = NULL)
     {
         $result = array();
-        $query = NewsWithTagModel::select("news_with_tag.news_id", "news_with_tag.news_tag_id", "tag.name");
-        $query = $query->leftJoin("tag", "news_with_tag.news_tag_id", "=", "tag.id");
-        if (isset($filter["newsId"]) && $filter["newsId"]) {
-            $query = $query->where("news_with_tag.news_id", $filter["newsId"]);
+        $query = VideoWithTagModel::select("video_with_tag.video_id", "video_with_tag.tag_id", "tag.name");
+        $query = $query->leftJoin("tag", "video_with_tag.tag_id", "=", "tag.id");
+        if (isset($filter["videoId"]) && $filter["videoId"]) {
+            $query = $query->where("video_with_tag.video_id", $filter["videoId"]);
         }
         if (isset($filter["tagId"]) && $filter["tagId"]) {
-            $query = $query->where("news_with_tag.tag_id", $filter["tagId"]);
+            $query = $query->where("video_with_tag.tag_id", $filter["tagId"]);
         }
         if (isset($filter["offset"]) && $filter["offset"]) {
             $query = $query->offset($filter["offset"]);

@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class NewsTagModel extends Model
+class TagModel extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
-    protected $table = 'news_tag';
+    protected $table = 'tag';
     protected $primaryKey = 'id';
     protected $fillable = [
         'name',
@@ -38,7 +38,7 @@ class NewsTagModel extends Model
     public static function getCount($filter = NULL)
     {
         $result = 0;
-        $query = NewsTagModel::select("id");
+        $query = TagModel::select("id");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("id", $filter["id"]);
         }
@@ -52,7 +52,7 @@ class NewsTagModel extends Model
     public static function getRow($filter = NULL)
     {
         $result = array();
-        $query = NewsTagModel::select("*");
+        $query = TagModel::select("*");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("id", $filter["id"]);
         }
@@ -72,7 +72,7 @@ class NewsTagModel extends Model
     public static function getList($filter = NULL)
     {
         $result = array();
-        $query = NewsTagModel::select("*");
+        $query = TagModel::select("*");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("id", $filter["id"]);
         }
