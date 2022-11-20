@@ -269,7 +269,7 @@ class VideoController extends Controller
                             $row['image'] = URL::to("/upload/video/" . $row['image']);
                         }
                         if (isset($row['link']) && $row['link']) {
-                            $row['link'] = env("WEB_YOUTUBE") . "/" . $row['link'];
+                            $row['link_youtube'] = env("WEB_YOUTUBE") . "/" . $row['link'];
                         }
 
                         $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
@@ -332,7 +332,7 @@ class VideoController extends Controller
                         $getInfo['image'] = URL::to("/upload/video/" . $getInfo['image']);
                     }
                     if (isset($getInfo['link']) && $getInfo['link']) {
-                        $getInfo['link'] = env("WEB_YOUTUBE") . "/" . $getInfo['link'];
+                        $getInfo['link_youtube'] = env("WEB_YOUTUBE") . "/" . $getInfo['link'];
                     }
                     $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
                     $getInfo['linkShare'] = env("WEB_DOMAIN") . "/video/" . $getInfo["slug"];
