@@ -75,10 +75,22 @@ class ApkController extends Controller
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
                 $getData = ApkVersionModel::getList();
-                if ($getData) {
+                $getDataVersion = array();
+                foreach ($getData as $rowData) {
+                    if ($rowData["type"] == "apk") {
+                        $getDataVersion["version_apk"] = $rowData["version"];
+                    } else if ($rowData["type"] == "database") {
+                        $getDataVersion["version_database"][] = array(
+                            "id" => $rowData["id"],
+                            "type" => $rowData["name"],
+                            "version" => $rowData["version"]
+                        );
+                    }
+                }
+                if ($getDataVersion) {
                     $response->code = '00';
                     $response->desc = 'Get List APK Version Success!';
-                    $response->data = $getData;
+                    $response->data = $getDataVersion;
                 } else {
                     $response->code = '02';
                     $response->desc = 'List APK Version is Empty.';

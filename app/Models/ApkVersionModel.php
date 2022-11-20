@@ -15,7 +15,7 @@ class ApkVersionModel extends Model
     public static function getRow($filter = NULL)
     {
         $result = array();
-        $query = ApkVersionModel::select("id", "type", "version");
+        $query = ApkVersionModel::select("id", "type", "name", "version");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("id", $filter["id"]);
         }
@@ -32,7 +32,7 @@ class ApkVersionModel extends Model
     public static function getList($filter = NULL)
     {
         $result = array();
-        $query = ApkVersionModel::select("id", "type", "version");
+        $query = ApkVersionModel::select("id", "type", "name", "version");
         if (isset($filter["id"]) && $filter["id"]) {
             $query = $query->where("id", $filter["id"]);
         }
