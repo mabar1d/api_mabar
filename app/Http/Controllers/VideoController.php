@@ -77,6 +77,18 @@ class VideoController extends Controller
                     );
                     $created = VideoModel::create($insertData);
                     $createdVideoId = $created->video_id;
+                    if ($request->hasFile('image')) {
+                        $fileName = 'video_' . $createdVideoId . '.jpg';
+                        $destinationPath = 'public/upload/video/';
+                        if (!file_exists(base_path($destinationPath))) {
+                            mkdir(base_path($destinationPath), 0775, true);
+                        }
+                        $request->file('image')->move(base_path($destinationPath . '/'), $fileName);
+                        VideoModel::find($createdVideoId)
+                            ->update([
+                                'image' => $fileName
+                            ]);
+                    }
                     if ($videoTagArray = json_decode($videoTag)) {
                         if (is_array($videoTagArray)) {
                             $insertVideoWithTag = array();
@@ -150,6 +162,18 @@ class VideoController extends Controller
                         'updated_by' => $userId
                     );
                     VideoModel::find($videoId)->update($updateData);
+                    if ($request->hasFile('image')) {
+                        $fileName = 'video_' . $videoId . '.jpg';
+                        $destinationPath = 'public/upload/video/';
+                        if (!file_exists(base_path($destinationPath))) {
+                            mkdir(base_path($destinationPath), 0775, true);
+                        }
+                        $request->file('image')->move(base_path($destinationPath . '/'), $fileName);
+                        VideoModel::find($videoId)
+                            ->update([
+                                'image' => $fileName
+                            ]);
+                    }
                     if ($videoTagArray = json_decode($videoTag)) {
                         if (is_array($videoTagArray)) {
                             $arrayVideoTagId = array();

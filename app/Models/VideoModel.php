@@ -18,6 +18,7 @@ class VideoModel extends Model
         'title',
         'slug',
         'content',
+        'image',
         'link',
         'notify',
         'status',
