@@ -658,19 +658,31 @@ class TournamentController extends Controller
                 'user_id' => 'required|string',
                 'search' => 'string',
                 'page' => 'numeric',
-                'filter_game' => 'required|string', 'min:2'
+                'filter_game' => 'required|string', 'min:2',
+                'type' => 'required|string',
             ]);
-            if (!$validator->fails()) {
-                $search = trim($requestData['search']);
-                $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
-                $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-                $filter_game = json_decode($requestData['filter_game'], true);
+            $search = trim($requestData['search']);
+            $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $filter_game = json_decode($requestData['filter_game'], true);
+            $type = isset($requestData['type']) ? trim($requestData['type']) : NULL;
+            // if (!in_array($type, ["not_open", "running", "history"])) {
+            //     throw new Exception("parameter type only use not_open, running and history!", '01');
+            // }
 
+            if (!$validator->fails()) {
                 if ($filter_game || empty($filter_game)) {
                     $limit = 20;
                     $query = MasterTournament::select('*')
-                        ->where('id_created_by', $userId)
-                        ->whereRaw('DATE(register_date_start) >= DATE(NOW())');
+                        ->where('id_created_by', $userId);
+                    if ($type == "not_open") {
+                        $query->whereRaw('DATE(register_date_start) >= DATE(NOW())');
+                    } elseif ($type == "open") {
+                        $query->whereRaw('DATE(register_date_start) >= DATE(NOW())');
+                        $query->whereRaw('DATE(end_date) <= DATE(NOW())');
+                    } elseif ($type == "history") {
+                        $query->whereRaw('DATE(end_date) <= DATE(NOW())');
+                    }
                     if (isset($filter_game) && $filter_game) {
                         $query->whereIn('game_id', $filter_game);
                     }
@@ -764,8 +776,8 @@ class TournamentController extends Controller
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
-            $response->code = '99';
-            $response->desc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = $e->getCode();
+            $response->desc = $e->getMessage();
         }
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
