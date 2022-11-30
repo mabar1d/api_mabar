@@ -678,8 +678,8 @@ class TournamentController extends Controller
                     if ($type == "not_open") {
                         $query->whereRaw('DATE(register_date_start) >= DATE(NOW())');
                     } elseif ($type == "open") {
-                        $query->whereRaw('DATE(register_date_start) >= DATE(NOW())');
-                        $query->whereRaw('DATE(end_date) <= DATE(NOW())');
+                        $query->whereRaw('DATE(register_date_start) <= DATE(NOW())');
+                        $query->whereRaw('DATE(end_date) >= DATE(NOW())');
                     } elseif ($type == "history") {
                         $query->whereRaw('DATE(end_date) <= DATE(NOW())');
                     }
