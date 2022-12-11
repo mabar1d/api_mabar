@@ -101,7 +101,13 @@ class AuthController extends Controller
             $password = isset($requestData["password"]) && $requestData["password"] ? trim($requestData["password"]) : NULL;
             $tokenFirebase = isset($requestData["token_firebase"]) && $requestData["token_firebase"] ? trim($requestData["token_firebase"]) : NULL;
             if (!$validator->fails()) {
-                if ($token = auth()->attempt(array("username" => $username, "password" => $password))) {
+                $checkAuthUser = User::where("username", $username)
+                    ->orWhere("email", $username)
+                    ->first();
+                if (!Hash::check($password, $checkAuthUser["password"])) {
+                    throw new Exception("Password invalid", 1);
+                }
+                if ($token = auth()->attempt(array("username" => $checkAuthUser["username"], "password" => $password))) {
                     $responseData = array(
                         'access_token' => $token,
                         'token_type' => 'bearer',
