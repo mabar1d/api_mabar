@@ -793,7 +793,7 @@ class TournamentController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($requestData, [
-                'user_id' => 'required|string',
+                'user_id' => 'string',
                 'tournament_id' => 'required|string'
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
@@ -1041,7 +1041,7 @@ class TournamentController extends Controller
         $requestData = $request->input();
         try {
             $validator = Validator::make($requestData, [
-                'user_id' => 'required|string',
+                'user_id' => 'string',
                 'tournament_id' => 'required|string'
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
