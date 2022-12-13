@@ -444,7 +444,7 @@ class TournamentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
-        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        // LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 
