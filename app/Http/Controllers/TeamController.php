@@ -425,8 +425,7 @@ class TeamController extends Controller
                                         ));
                                     Personnel::where('user_id', $user_id_requested)
                                         ->update(array(
-                                            'team_id' => $checkTeamExist['id'],
-                                            'answer' => 1
+                                            'team_id' => $checkTeamExist['id']
                                         ));
                                     // MasterReqJoinTeam::where('user_id', $user_id_requested)
                                     //     ->update(array('answer' => 1));
