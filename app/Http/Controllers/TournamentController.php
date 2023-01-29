@@ -659,7 +659,7 @@ class TournamentController extends Controller
                 'search' => 'string',
                 'page' => 'numeric',
                 'filter_game' => 'required|string', 'min:2',
-                'type' => 'required|string',
+                'type' => 'string',
             ]);
             $search = trim($requestData['search']);
             $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
@@ -799,7 +799,8 @@ class TournamentController extends Controller
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
             if (!$validator->fails()) {
-                $checkDataExist = MasterTournament::find($tournamentId)->first();
+                $checkDataExist = MasterTournament::find($tournamentId);
+                dd($checkDataExist);
                 if ($checkDataExist) {
                     $urlDomain = env('WEB_DOMAIN');
                     $urlGetTournamentTree = $urlDomain . "/look_tournament/?tournament_id=" . $tournamentId;
@@ -1053,9 +1054,23 @@ class TournamentController extends Controller
                     "tournamentPhase" => $phase
                 ));
                 if ($getListMatch) {
+                    $data["results"] = array();
+                    foreach ($getListMatch as $rowResponseData) {
+                        if ($rowResponseData["tournament_phase"] == 0) {
+                            $data["teams"][] = [
+                                $rowResponseData["home_team_id"],
+                                $rowResponseData["opponent_team_id"]
+                            ];
+                        }
+                        $score[$rowResponseData["tournament_phase"]][] = [
+                            $rowResponseData["score_home"],
+                            $rowResponseData["score_opponent"]
+                        ];
+                    }
+                    array_push($data["results"], $score);
                     $response->code = '00';
                     $response->desc = 'Success Get List Tree Tournament Match.';
-                    $response->data = $getListMatch;
+                    $response->data = $data;
                 } else {
                     $response->code = '02';
                     $response->desc = 'List Tree Tournament Match Not Found.';

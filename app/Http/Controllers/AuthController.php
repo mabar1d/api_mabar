@@ -104,6 +104,9 @@ class AuthController extends Controller
                 $checkAuthUser = User::where("username", $username)
                     ->orWhere("email", $username)
                     ->first();
+                if (!$checkAuthUser) {
+                    throw new Exception("User Not Found", 1);
+                }
                 if (!Hash::check($password, $checkAuthUser["password"])) {
                     throw new Exception("Password invalid", 1);
                 }
@@ -139,7 +142,7 @@ class AuthController extends Controller
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';
-            $response->desc = 'Caught exception: ' .  $e->getMessage();
+            $response->desc = $e->getMessage();
         }
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);

@@ -67,6 +67,7 @@ class TreeTournamentMatchModel extends Model
         if (isset($limit) && $limit) {
             $query = $query->limit($offset);
         }
+        $query->orderBy("tournament_phase", "ASC");
         $query->orderBy("round", "ASC");
         $query = $query->get();
         if ($query) {
