@@ -432,7 +432,10 @@ class TeamController extends Controller
                                     MasterReqJoinTeam::where('user_id', $user_id_requested)->delete();
                                 } else {
                                     MasterReqJoinTeam::where('user_id', $user_id_requested)
-                                        ->update(array('answer' => 0));
+                                        ->update(array(
+                                            'team_id' => $checkTeamExist->id,
+                                            'answer' => 0
+                                        ));
                                 }
                                 $response->code = '00';
                                 $response->desc = 'Answer Request Success!';
