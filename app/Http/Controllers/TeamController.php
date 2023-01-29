@@ -486,6 +486,7 @@ class TeamController extends Controller
                 if ($checkTeamExist) {
                     if ($checkTeamExist->admin_id == $userId) {
                         $listReqJoinTeam = MasterReqJoinTeam::where('team_id', $teamId)
+                            ->whereNull("status")
                             ->get();
                         if ($listReqJoinTeam->first()) {
                             $resultData = array();
