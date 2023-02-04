@@ -153,6 +153,8 @@ class PersonnelController extends Controller
                 'zipcode' => 'required|numeric|digits:5',
                 'birthdate' => 'string|date|date_format:"d-m-Y"',
                 'phone' => 'numeric|digits_between:10,13'
+            ], [
+                'ign.required' => 'The in game name field is required.'
             ]);
             $userId = $requestData['user_id'];
             if (!$validator->fails()) {

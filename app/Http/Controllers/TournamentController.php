@@ -126,6 +126,8 @@ class TournamentController extends Controller
                 'prize' => 'required|numeric',
                 'game_id' => 'required|string',
                 'type' => 'required|string'
+            ], [
+                'detail.required' => 'The description field is required.'
             ]);
             $userId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
