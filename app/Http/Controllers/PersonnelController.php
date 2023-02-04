@@ -321,13 +321,32 @@ class PersonnelController extends Controller
                 if ($findPersonnel) {
                     if ($findPersonnel->is_verified == 1) {
                         if (empty($findPersonnel->team_id)) {
-                            $updateData = array(
-                                'role' => '2',
-                            );
-                            Personnel::where('user_id', $userId)
-                                ->update($updateData);
-                            $response->code = '00';
-                            $response->desc = 'Personnel Change To Team Leader Success!';
+                            $passValidate = true;
+                            if ($findPersonnel->role == 3) {
+                                if (empty($findPersonnel->team_id)) {
+                                    $checkTournamentExist = MasterTournament::where('id_created_by', $userId)
+                                        ->whereRaw("DATE(end_date) >= DATE(NOW())")
+                                        ->first();
+                                    if ($checkTournamentExist) {
+                                        $response->code = '02';
+                                        $response->desc = 'Personnel already have a tournament going on. Please wait until the tournament is over!';
+                                        $passValidate = false;
+                                    }
+                                } else {
+                                    $response->code = '02';
+                                    $response->desc = 'Personnel already join team. Please leave team first!';
+                                    $passValidate = false;
+                                }
+                            }
+                            if ($passValidate) {
+                                $updateData = array(
+                                    'role' => '2',
+                                );
+                                Personnel::where('user_id', $userId)
+                                    ->update($updateData);
+                                $response->code = '00';
+                                $response->desc = 'Personnel Change To Team Leader Success!';
+                            }
                         } else {
                             $response->code = '02';
                             $response->desc = 'Personnel already join team. Please leave team first!';
@@ -370,13 +389,31 @@ class PersonnelController extends Controller
                 if ($findPersonnel) {
                     if ($findPersonnel->is_verified == 1) {
                         if (empty($findPersonnel->team_id)) {
-                            $updateData = array(
-                                'role' => '3',
-                            );
-                            Personnel::where('user_id', $userId)
-                                ->update($updateData);
-                            $response->code = '00';
-                            $response->desc = 'Personnel Change To Host Success!';
+                            if ($findPersonnel->role == 3) {
+                                if (empty($findPersonnel->team_id)) {
+                                    $checkTournamentExist = MasterTournament::where('id_created_by', $userId)
+                                        ->whereRaw("DATE(end_date) >= DATE(NOW())")
+                                        ->first();
+                                    if ($checkTournamentExist) {
+                                        $response->code = '02';
+                                        $response->desc = 'Personnel already have a tournament going on. Please wait until the tournament is over!';
+                                        $passValidate = false;
+                                    }
+                                } else {
+                                    $response->code = '02';
+                                    $response->desc = 'Personnel already join team. Please leave team first!';
+                                    $passValidate = false;
+                                }
+                            }
+                            if ($passValidate) {
+                                $updateData = array(
+                                    'role' => '3',
+                                );
+                                Personnel::where('user_id', $userId)
+                                    ->update($updateData);
+                                $response->code = '00';
+                                $response->desc = 'Personnel Change To Host Success!';
+                            }
                         } else {
                             $response->code = '02';
                             $response->desc = 'Personnel already join team. Please leave team first!';
