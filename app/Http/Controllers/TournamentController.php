@@ -297,7 +297,7 @@ class TournamentController extends Controller
                                         }
                                     } else {
                                         $response->code = '02';
-                                        $response->desc = 'Team Game Not Same With Tournament Game.';
+                                        $response->desc = "Your Team's Game Type is not suitable for this Tournament.";
                                     }
                                 } else {
                                     $response->code = '02';
@@ -629,6 +629,7 @@ class TournamentController extends Controller
                 foreach ($query as $queryRow) {
                     $data = array(
                         "id" => isset($queryRow->id) && $queryRow->id ? trim($queryRow->id) : "",
+                        "title_tournament" => isset($queryRow->name) && $queryRow->name ? trim($queryRow->name) : "",
                         "image" => NULL
                     );
                     if ($queryRow->image) {
