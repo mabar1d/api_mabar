@@ -135,26 +135,36 @@ class TeamController extends Controller
                         ->where('admin_id', $userId)
                         ->first();
                     if ($checkTeamExist) {
-                        $checkGame = MasterGame::where("id", $gameId)->first();
-                        if ($checkGame) {
-                            array_push($teamPersonnel, $userId);
-                            $updateData = array(
-                                'name' => $teamName,
-                                'info' => $teamInfo,
-                                'admin_id' => $userId,
-                                'personnel' => json_encode($teamPersonnel),
-                                'game_id' => $gameId,
-                            );
-                            MasterTeam::where('id', $teamId)->update($updateData);
-                            $updatePersonnelTeam = array(
-                                'team_id' => $teamId
-                            );
-                            Personnel::whereIn('user_id', $teamPersonnel)->update($updatePersonnelTeam);
-                            $response->code = '00';
-                            $response->desc = 'Update Team Success!';
+                        $checkTeamHaveTournamentRunning = TeamTournament::select("team_tournament.id")
+                            ->leftJoin("tournament", "team_tournament.tournament_id", "=", "tournament.id")
+                            ->where("team_tournament.team_id", $checkTeamExist->id)
+                            ->where("tournament.register_date_start", ">=", date("Y-m-d"))
+                            ->first();
+                        if (!$checkTeamHaveTournamentRunning) {
+                            $checkGame = MasterGame::where("id", $gameId)->first();
+                            if ($checkGame) {
+                                array_push($teamPersonnel, $userId);
+                                $updateData = array(
+                                    'name' => $teamName,
+                                    'info' => $teamInfo,
+                                    'admin_id' => $userId,
+                                    'personnel' => json_encode($teamPersonnel),
+                                    'game_id' => $gameId,
+                                );
+                                MasterTeam::where('id', $teamId)->update($updateData);
+                                $updatePersonnelTeam = array(
+                                    'team_id' => $teamId
+                                );
+                                Personnel::whereIn('user_id', $teamPersonnel)->update($updatePersonnelTeam);
+                                $response->code = '00';
+                                $response->desc = 'Update Team Success!';
+                            } else {
+                                $response->code = '02';
+                                $response->desc = 'Game Not Found.';
+                            }
                         } else {
                             $response->code = '02';
-                            $response->desc = 'Game Not Found.';
+                            $response->desc = 'The team is in a running tournament.';
                         }
                     } else {
                         $response->code = '02';
