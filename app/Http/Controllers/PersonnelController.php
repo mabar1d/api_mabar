@@ -145,7 +145,7 @@ class PersonnelController extends Controller
             $validator = Validator::make($requestData, [
                 'user_id' => 'required|string',
                 'firstname' => 'required|string',
-                'nickname' => 'required|string',
+                'ign' => 'required|string',
                 'gender_id' => 'required|numeric',
                 // 'sub_district_id' => 'required|numeric',
                 // 'district_id' => 'required|numeric',
@@ -161,7 +161,7 @@ class PersonnelController extends Controller
                     $updateData = array(
                         'firstname' => isset($requestData['firstname']) ? trim($requestData['firstname']) : NULL,
                         'lastname' => isset($requestData['lastname']) ? trim($requestData['lastname']) : NULL,
-                        'nickname' => isset($requestData['nickname']) ? trim($requestData['nickname']) : NULL,
+                        'ign' => isset($requestData['ign']) ? trim($requestData['ign']) : NULL,
                         'gender_id' => isset($requestData['gender_id']) ? trim($requestData['gender_id']) : NULL,
                         'address' => isset($requestData['address']) ? trim($requestData['address']) : NULL,
                         'sub_district_id' => isset($requestData['sub_district_id']) ? trim($requestData['sub_district_id']) : NULL,

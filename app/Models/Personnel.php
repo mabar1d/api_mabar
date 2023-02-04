@@ -14,7 +14,7 @@ class Personnel extends Model
         'user_id',
         'firstname',
         'lastname',
-        'nickname',
+        'ign',
         'gender',
         'birthdate',
         'address',
