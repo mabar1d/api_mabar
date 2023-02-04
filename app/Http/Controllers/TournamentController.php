@@ -50,6 +50,8 @@ class TournamentController extends Controller
                 'prize' => 'required|numeric',
                 'game_id' => 'required|string',
                 'type' => 'required|string',
+            ], [
+                'detail.required' => 'The description field is required.'
             ]);
             $userId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
@@ -800,7 +802,7 @@ class TournamentController extends Controller
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
             if (!$validator->fails()) {
                 $checkDataExist = MasterTournament::find($tournamentId);
-                dd($checkDataExist);
+                // dd($checkDataExist);
                 if ($checkDataExist) {
                     $urlDomain = env('WEB_DOMAIN');
                     $urlGetTournamentTree = $urlDomain . "/look_tournament/?tournament_id=" . $tournamentId;
