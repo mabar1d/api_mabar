@@ -138,7 +138,7 @@ class TeamController extends Controller
                         $checkTeamHaveTournamentRunning = TeamTournament::select("team_tournament.id")
                             ->leftJoin("m_tournament", "team_tournament.tournament_id", "=", "m_tournament.id")
                             ->where("team_tournament.team_id", $checkTeamExist->id)
-                            ->where("m_tournament.register_date_start", ">=", date("Y-m-d"))
+                            ->where("m_tournament.register_date_start", "<=", date("Y-m-d"))
                             ->first();
                         if (!$checkTeamHaveTournamentRunning) {
                             $checkGame = MasterGame::where("id", $gameId)->first();
