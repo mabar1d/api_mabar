@@ -50,8 +50,10 @@ class TournamentController extends Controller
                 'prize' => 'required|numeric',
                 'game_id' => 'required|string',
                 'type' => 'required|string',
+                'terms_condition' => 'required|string'
             ], [
-                'detail.required' => 'The description field is required.'
+                'detail.required' => 'The description field is required.',
+                'terms_condition' => 'The terms and condition is required.'
             ]);
             $userId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentName = isset($requestData['name']) ? trim($requestData['name']) : NULL;
@@ -74,7 +76,8 @@ class TournamentController extends Controller
                             'number_of_participants' => $requestData['number_of_participants'],
                             'prize' => $requestData['prize'],
                             'game_id' => $requestData['game_id'],
-                            'type' => $requestData['type']
+                            'type' => $requestData['type'],
+                            'terms_condition' => $requestData['terms_condition']
                         );
                         $getCreatedData = MasterTournament::create($insertData);
                         $data = new stdClass();
@@ -125,9 +128,11 @@ class TournamentController extends Controller
                 'end_date' => 'required|string',
                 'prize' => 'required|numeric',
                 'game_id' => 'required|string',
-                'type' => 'required|string'
+                'type' => 'required|string',
+                'terms_condition' => 'required|string'
             ], [
-                'detail.required' => 'The description field is required.'
+                'detail.required' => 'The description field is required.',
+                'terms_condition' => 'The terms and condition is required.'
             ]);
             $userId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
@@ -152,7 +157,8 @@ class TournamentController extends Controller
                                 'number_of_participants' => $requestData['number_of_participants'],
                                 'prize' => $requestData['prize'],
                                 'game_id' => $requestData['game_id'],
-                                'type' => $requestData['type']
+                                'type' => $requestData['type'],
+                                'terms_condition' => $requestData['terms_condition']
                             );
                             MasterTournament::where('id', $tournamentId)
                                 ->update($updateData);

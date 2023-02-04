@@ -23,7 +23,8 @@ class MasterTournament extends Model
         'prize',
         'game_id',
         'type',
-        'image'
+        'image',
+        'terms_condition'
     ];
     protected $hidden = array('created_at', 'updated_at');
 
