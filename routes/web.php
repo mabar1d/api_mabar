@@ -111,6 +111,13 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('deleteVideo', 'VideoController@delete');
     $router->post('getListVideo', 'VideoController@getList');
     $router->post('getInfoVideo', 'VideoController@getInfo');
+
+    //GENERAL
+    // $router->post('createGame', 'GameController@create');
+    // $router->post('updateMasterGame', 'GameController@update');
+    // $router->post('deleteMasterGame', 'GameController@delete');
+    // $router->post('getListMasterGame', 'GameController@getList');
+    $router->post('getInfoGeneral', 'GeneralController@getInfo');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
