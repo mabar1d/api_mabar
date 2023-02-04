@@ -389,6 +389,7 @@ class PersonnelController extends Controller
                 if ($findPersonnel) {
                     if ($findPersonnel->is_verified == 1) {
                         if (empty($findPersonnel->team_id)) {
+                            $passValidate = true;
                             if ($findPersonnel->role == 3) {
                                 if (empty($findPersonnel->team_id)) {
                                     $checkTournamentExist = MasterTournament::where('id_created_by', $userId)
