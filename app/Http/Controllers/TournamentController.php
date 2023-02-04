@@ -436,6 +436,7 @@ class TournamentController extends Controller
                             $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
                             $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
                             $data->team_in_tournament = $teamInThisTournament;
+                            $data->terms_condition = isset($execQuery_row->terms_condition) && $execQuery_row->terms_condition ? trim($execQuery_row->terms_condition) : NULL;
                             array_push($result, $data);
                         }
                         $response->code = '00';
@@ -537,6 +538,7 @@ class TournamentController extends Controller
                     $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
                     $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
                     $data->team_in_tournament = $teamInThisTournament;
+                    $data->terms_condition = isset($getInfoTournament->terms_condition) && $getInfoTournament->terms_condition ? trim($getInfoTournament->terms_condition) : NULL;
 
                     $response->code = '00';
                     $response->desc = 'Get Info Tournament Success!';
@@ -772,6 +774,7 @@ class TournamentController extends Controller
                             $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
                             $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
                             $data->team_in_tournament = $teamInThisTournament;
+                            $data->terms_condition = isset($execQuery_row->terms_condition) && $execQuery_row->terms_condition ? trim($execQuery_row->terms_condition) : NULL;;
                             array_push($result, $data);
                         }
                         $response->code = '00';
