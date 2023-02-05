@@ -1076,9 +1076,11 @@ class TournamentController extends Controller
                     $data["results"] = array();
                     foreach ($getListMatch as $rowResponseData) {
                         if ($rowResponseData["tournament_phase"] == 0) {
+                            $getInfoTeamHome = MasterTeam::find($rowResponseData["home_team_id"]);
+                            $getInfoTeamOpponent = MasterTeam::find($rowResponseData["opponent_team_id"]);
                             $data["teams"][] = [
-                                $rowResponseData["home_team_id"],
-                                $rowResponseData["opponent_team_id"]
+                                isset($getInfoTeamHome) && $getInfoTeamHome ? $getInfoTeamHome->name : "N/A",
+                                isset($getInfoTeamOpponent) && $getInfoTeamOpponent ? $getInfoTeamOpponent->name : "N/A"
                             ];
                         }
                         $score[$rowResponseData["tournament_phase"]][] = [
