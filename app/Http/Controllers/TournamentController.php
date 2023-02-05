@@ -1084,8 +1084,8 @@ class TournamentController extends Controller
                             ];
                         }
                         $score[$rowResponseData["tournament_phase"]][] = [
-                            $rowResponseData["score_home"],
-                            $rowResponseData["score_opponent"]
+                            (int)$rowResponseData["score_home"],
+                            (int)$rowResponseData["score_opponent"]
                         ];
                     }
                     array_push($data["results"], $score);
