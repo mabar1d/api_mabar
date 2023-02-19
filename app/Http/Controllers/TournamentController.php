@@ -864,7 +864,7 @@ class TournamentController extends Controller
             $tournamentId = isset($requestData['tournament_id']) ? trim($requestData['tournament_id']) : NULL;
             $arrayMatchTournament = isset($requestData['match_array']) && $requestData['match_array'] ? json_decode($requestData['match_array'], true) : NULL;
             if (!$validator->fails()) {
-                $checkDataExist = MasterTournament::find($tournamentId)->first();
+                $checkDataExist = MasterTournament::where("id", $tournamentId)->first();
                 if ($checkDataExist) {
                     $tournamentDetail = $checkDataExist->toArray();
                     if ($tournamentDetail["id_created_by"] == $userId) {
