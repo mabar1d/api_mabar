@@ -868,7 +868,7 @@ class TournamentController extends Controller
                 if ($checkDataExist) {
                     $tournamentDetail = $checkDataExist->toArray();
                     if ($tournamentDetail["id_created_by"] == $userId) {
-                        if (strtotime(date("Y/m/d")) <= strtotime($tournamentDetail["start_date"])) {
+                        if (strtotime(date("Y/m/d")) >= strtotime($tournamentDetail["start_date"])) {
                             $round = 0;
                             foreach ($arrayMatchTournament as $rowArrayMatchTournament) {
                                 $round++;
