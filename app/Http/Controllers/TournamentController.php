@@ -945,11 +945,11 @@ class TournamentController extends Controller
                                 foreach ($getTeamTournament as $rowTeamTournament) {
                                     array_push($arrayPerMatch, $rowTeamTournament["team_id"]);
                                     if (count($arrayPerMatch) == $maxPerMatch) {
-                                        // array_push($arrayMatchResult, $arrayPerMatch);
-                                        // $arrayPerMatch = array();
+                                        array_push($arrayMatchResult, $arrayPerMatch);
+                                        $arrayPerMatch = array();
                                     }
                                 }
-                                array_push($arrayMatchResult, $arrayPerMatch);
+                                // array_push($arrayMatchResult, $arrayPerMatch);
 
                                 $resultArray = array();
                                 foreach ($arrayMatchResult as $rowMatchResult) {
