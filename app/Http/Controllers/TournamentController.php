@@ -878,7 +878,7 @@ class TournamentController extends Controller
                                     ],
                                     [
                                         'tournament_id' => $tournamentId,
-                                        'tournament_phase' => 1,
+                                        'tournament_phase' => 0,
                                         'round' => $round,
                                         'home_team_id' => isset($rowArrayMatchTournament["home_team_id"]) && $rowArrayMatchTournament["home_team_id"] ? $rowArrayMatchTournament["home_team_id"] : NULL,
                                         'opponent_team_id' => isset($rowArrayMatchTournament["opponent_team_id"]) && $rowArrayMatchTournament["opponent_team_id"] ? $rowArrayMatchTournament["opponent_team_id"] : NULL,
