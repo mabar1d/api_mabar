@@ -275,7 +275,7 @@ class TournamentController extends Controller
                                                 $checkQuotaTournament = TeamTournament::where('tournament_id', $getInfoTournament->id)
                                                     ->where('active', '1')
                                                     ->count();
-                                                if ($checkQuotaTournament <= $getInfoTournament->number_of_participants) {
+                                                if ($checkQuotaTournament < $getInfoTournament->number_of_participants) {
                                                     $insertData = array(
                                                         'team_id' => $getPersonnel->team_id,
                                                         'tournament_id' => $tournamentId,
@@ -945,8 +945,8 @@ class TournamentController extends Controller
                                 foreach ($getTeamTournament as $rowTeamTournament) {
                                     array_push($arrayPerMatch, $rowTeamTournament["team_id"]);
                                     if (count($arrayPerMatch) == $maxPerMatch) {
-                                        array_push($arrayMatchResult, $arrayPerMatch);
-                                        $arrayPerMatch = array();
+                                        // array_push($arrayMatchResult, $arrayPerMatch);
+                                        // $arrayPerMatch = array();
                                     }
                                 }
                                 array_push($arrayMatchResult, $arrayPerMatch);
