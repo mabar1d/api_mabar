@@ -10,6 +10,7 @@ class MasterTournament extends Model
     use HasFactory;
 
     protected $table = 'm_tournament';
+    protected $primaryKey = 'id';
     protected $fillable = [
         'name',
         'id_created_by',
