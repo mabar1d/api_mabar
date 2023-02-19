@@ -508,7 +508,7 @@ class TournamentController extends Controller
                     if ($getTeamInThisTournamentArray) {
                         $getTeamInThisTournamentArray = $getTeamInThisTournamentArray->toArray();
                         foreach ($getTeamInThisTournamentArray as $rowTeamThisTournament) {
-                            $getTeamInfo = MasterTeam::find($rowTeamThisTournament["id"]);
+                            $getTeamInfo = MasterTeam::find($rowTeamThisTournament["team_id"]);
                             if ($getTeamInfo) {
                                 $getTeamInfo = $getTeamInfo->toArray();
                                 $teamInThisTournament[] = array(
@@ -744,7 +744,7 @@ class TournamentController extends Controller
                             if ($getTeamInThisTournamentArray) {
                                 $getTeamInThisTournamentArray = $getTeamInThisTournamentArray->toArray();
                                 foreach ($getTeamInThisTournamentArray as $rowTeamThisTournament) {
-                                    $getTeamInfo = MasterTeam::find($rowTeamThisTournament["id"]);
+                                    $getTeamInfo = MasterTeam::find($rowTeamThisTournament["team_id"]);
                                     if ($getTeamInfo) {
                                         $getTeamInfo = $getTeamInfo->toArray();
                                         $teamInThisTournament[] = array(
