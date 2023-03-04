@@ -118,10 +118,17 @@ $router->group(['prefix' => 'api'], function ($router) {
     // $router->post('deleteMasterGame', 'GameController@delete');
     // $router->post('getListMasterGame', 'GameController@getList');
     $router->post('getInfoGeneral', 'GeneralController@getInfo');
+
+    //CALLBACK MIDTRANS
+    $router->post('callbackMidtransNotification', 'CallbackMidtransController@index');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
     $router->post('register', 'AuthController@register');
     $router->post('login', 'AuthController@login');
     $router->post('getListApkMenu', 'ApkController@getListApkMenu');
+});
+
+$router->group(['prefix' => 'api/payment'], function () use ($router) {
+    $router->post('createTransactions', 'PaymentController@createPaymentTransactions');
 });
