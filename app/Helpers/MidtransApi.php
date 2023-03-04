@@ -25,7 +25,7 @@ class MidtransApi
         $bodyParameters->callbacks = [
             "finish" => "testweb"
         ];
-
+        // dd($bodyParameters);
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_URL => $urlThirdParty . 'transactions',

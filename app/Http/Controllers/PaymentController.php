@@ -45,18 +45,19 @@ class PaymentController extends Controller
                 'items_detail' => 'required|string',
                 'customer_detail' => 'required|string'
             ]);
-            $userId = isset($requestData['host_id']) ? trim($requestData['host_id']) : NULL;
-            $paymentType = isset($requestData['name']) ? trim($requestData['name']) : NULL;
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $paymentType = isset($requestData['payment_type']) ? trim($requestData['payment_type']) : NULL;
             $grossAmount = isset($requestData['gross_amount']) ? intval($requestData['gross_amount']) : 0;
-            $itemsDetail = isset($requestData['items_detail']) ? trim($requestData['items_detail']) : NULL;
-            $customerDetail = isset($requestData['customer_detail']) ? trim($requestData['customer_detail']) : NULL;
+            $itemsDetail = isset($requestData['items_detail']) ? json_decode(trim($requestData['items_detail']), true) : NULL;
+            $customerDetail = isset($requestData['customer_detail']) ? json_decode(trim($requestData['customer_detail']), true) : NULL;
 
             if (!$validator->fails()) {
-                $orderId = $paymentType . "-" . time();
+                $orderId = $paymentType . "-" . $userId . "-" . time();
                 $createTransaction = MidtransApi::transactions($orderId, $grossAmount, $itemsDetail, $customerDetail);
                 if ($createTransaction) {
                     if (!isset($createTransaction["error_messages"])) {
                         $dataSaveDB = [
+                            "order_id" => $orderId,
                             "token_trx" => $createTransaction["token"],
                             "url_trx" => $createTransaction["redirect_url"]
                         ];
@@ -83,7 +84,7 @@ class PaymentController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
-        // LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 }
