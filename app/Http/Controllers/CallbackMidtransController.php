@@ -105,7 +105,7 @@ class CallbackMidtransController extends Controller
             $resultCircleApi = false;
             if ($explodeOrderId[1] == "TR") { //register tournament
                 $tournamentId = isset($explodeOrderId[4]) && $explodeOrderId[4] ? $explodeOrderId[4] : NULL;
-                if ($requestData["status_code"] == 200) { //payment status is settlement
+                if ($requestData["status_code"] == 200 || $requestData["status_code"] == 201) { //payment status is settlement atau pending
                     $headers = array(
                         'Content-Type: application/x-www-form-urlencoded',
                         'Authorization: Bearer ' . env("GOD_BEARER")
