@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PaymentMidtrans;
+use Illuminate\Http\Request;
+
 class CallbackMidtransController extends Controller
 {
     /**
@@ -81,8 +84,14 @@ class CallbackMidtransController extends Controller
         return $result;
     }
 
-    public function finish()
+    public function finish(Request $request)
     {
-        dd("test");
+        $requestData = $request->input();
+        PaymentMidtrans::create(
+            [
+                "order_id" => isset($requestData["order_id"]) && $requestData["order_id"] ? $requestData["order_id"] : NULL,
+                "request_body" => isset($requestData) && $requestData ? json_encode($requestData) : NULL
+            ]
+        );
     }
 }
