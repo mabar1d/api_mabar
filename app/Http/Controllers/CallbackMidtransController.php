@@ -80,4 +80,9 @@ class CallbackMidtransController extends Controller
         );
         return $result;
     }
+
+    public function finish()
+    {
+        dd("test");
+    }
 }
