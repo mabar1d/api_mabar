@@ -41,6 +41,7 @@ class CallbackMidtransController extends Controller
 
         // get the HTTP POST body of the request
         $request_body = file_get_contents('php://input');
+        dd($request_body);
         // set response's content type as JSON
         header('Content-Type: application/json');
         // call charge API using request body passed by mobile SDK
