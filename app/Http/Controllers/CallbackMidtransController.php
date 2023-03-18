@@ -86,7 +86,6 @@ class CallbackMidtransController extends Controller
 
     public function finish(Request $request)
     {
-        dd("test");
         $requestData = $request->input();
         PaymentMidtrans::create(
             [
