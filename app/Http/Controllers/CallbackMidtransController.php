@@ -148,6 +148,7 @@ class CallbackMidtransController extends Controller
                     "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL
                 ]
             );
+            DB::commit();
             $response->code = "00";
             $response->desc = "Success Get Payment Status!";
             $response->data = [
