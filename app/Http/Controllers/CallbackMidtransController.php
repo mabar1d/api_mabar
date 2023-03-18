@@ -129,7 +129,7 @@ class CallbackMidtransController extends Controller
                             $getTeam = MasterTeam::where('id', $getPersonnel->team_id)->first();
                             if ($getTeam) {
                                 if ($getTeam->admin_id == $userId) {
-                                    TeamTournament::where("team_id", $getTeam->team_id)->where("tournament_id", $tournamentId)->delete();
+                                    TeamTournament::where("team_id", $getTeam->id)->where("tournament_id", $tournamentId)->delete();
                                     $resultCircleApi = new stdClass();
                                     $resultCircleApi->code = "00";
                                     $resultCircleApi->desc = "Success Delete user_id";
