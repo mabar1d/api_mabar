@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PaymentMidtrans;
+use App\Models\LogApi;
+use App\Models\PaymentMidtransModel;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class CallbackMidtransController extends Controller
 {
@@ -86,12 +90,57 @@ class CallbackMidtransController extends Controller
 
     public function finish(Request $request)
     {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
         $requestData = $request->input();
-        PaymentMidtrans::create(
-            [
-                "order_id" => isset($requestData["order_id"]) && $requestData["order_id"] ? $requestData["order_id"] : NULL,
-                "request_body" => isset($requestData) && $requestData ? json_encode($requestData) : NULL
-            ]
-        );
+        DB::beginTransaction();
+        try {
+            $orderId = isset($requestData["order_id"]) && $requestData["order_id"] ? $requestData["order_id"] : NULL;
+            $explodeOrderId = explode("-", $orderId);
+            $userId = isset($explodeOrderId[2]) && $explodeOrderId[2] ? $explodeOrderId[2] : NULL;
+            $resultCircleApi = false;
+            if ($explodeOrderId[1] == "TR") { //register tournament
+                if ($requestData["status_code"] == 200) { //payment status is settlement
+                    $tournamentId = isset($explodeOrderId[4]) && $explodeOrderId[4] ? $explodeOrderId[4] : NULL;
+                    $headers = array(
+                        'Content-Type: application/x-www-form-urlencoded',
+                        'Authorization: Bearer ' . env("GOD_BEARER")
+                    );
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, url('api/registerTournament'));
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, 'user_id=' . $userId . '&tournament_id=' . $tournamentId);
+                    $result = curl_exec($ch);
+                    if ($result) {
+                        $resultCircleApi = json_decode($result);
+                    };
+                }
+            }
+            PaymentMidtransModel::create(
+                [
+                    "order_id" => $orderId,
+                    "request_body" => isset($requestData) && $requestData ? json_encode($requestData) : NULL,
+                    "user_id" => $userId,
+                    "status_code" => isset($requestData["status_code"]) && $requestData["status_code"] ? $requestData["status_code"] : NULL,
+                    "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL
+                ]
+            );
+            $response->code = "00";
+            $response->desc = "Success Get Payment Status!";
+            $response->data = [
+                "responseCirlceApi" => $resultCircleApi
+            ];
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        // LogApi::createLog(, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
     }
 }
