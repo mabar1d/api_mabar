@@ -120,7 +120,7 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('getInfoGeneral', 'GeneralController@getInfo');
 
     //CALLBACK MIDTRANS
-    $router->post('callbackMidtransNotification/', 'CallbackMidtransController@index');
+    $router->post('callbackMidtransNotification/charge', 'CallbackMidtransController@index');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
