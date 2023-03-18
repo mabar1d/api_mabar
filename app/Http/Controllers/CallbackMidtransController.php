@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\LogApi;
+use App\Models\MasterTeam;
 use App\Models\PaymentMidtransModel;
+use App\Models\Personnel;
+use App\Models\TeamTournament;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -101,8 +104,8 @@ class CallbackMidtransController extends Controller
             $userId = isset($explodeOrderId[2]) && $explodeOrderId[2] ? $explodeOrderId[2] : NULL;
             $resultCircleApi = false;
             if ($explodeOrderId[1] == "TR") { //register tournament
+                $tournamentId = isset($explodeOrderId[4]) && $explodeOrderId[4] ? $explodeOrderId[4] : NULL;
                 if ($requestData["status_code"] == 200) { //payment status is settlement
-                    $tournamentId = isset($explodeOrderId[4]) && $explodeOrderId[4] ? $explodeOrderId[4] : NULL;
                     $headers = array(
                         'Content-Type: application/x-www-form-urlencoded',
                         'Authorization: Bearer ' . env("GOD_BEARER")
@@ -119,6 +122,21 @@ class CallbackMidtransController extends Controller
                     if ($result) {
                         $resultCircleApi = json_decode($result);
                     };
+                } elseif ($requestData["status_code"] == 202) { //failed registration
+                    $getPersonnel = Personnel::where('user_id', $userId)->first();
+                    if ($getPersonnel) {
+                        if (isset($getPersonnel->team_id) && $getPersonnel->team_id) {
+                            $getTeam = MasterTeam::where('id', $getPersonnel->team_id)->first();
+                            if ($getTeam) {
+                                if ($getTeam->admin_id == $userId) {
+                                    TeamTournament::where("team_id", $getTeam->team_id)->where("tournament_id", $tournamentId)->delete();
+                                    $resultCircleApi = new stdClass();
+                                    $resultCircleApi->code = "00";
+                                    $resultCircleApi->desc = "Success Delete user_id";
+                                }
+                            }
+                        }
+                    }
                 }
             }
             PaymentMidtransModel::create(
