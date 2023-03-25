@@ -15,7 +15,11 @@ class PaymentStatusModel extends Model
         'user_id',
         'order_id',
         'status_code',
-        'transaction_status'
+        'transaction_status',
+        'transaction_time',
+        'settlement_time',
+        'expiry_time',
+        'gross_amount'
     ];
     protected $hidden = array('created_at', 'updated_at');
 }

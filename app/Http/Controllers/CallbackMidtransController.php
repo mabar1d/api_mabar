@@ -147,7 +147,11 @@ class CallbackMidtransController extends Controller
                 ],
                 [
                     "status_code" => isset($requestData["status_code"]) && $requestData["status_code"] ? $requestData["status_code"] : NULL,
-                    "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL
+                    "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL,
+                    "transaction_time" => isset($requestData["transaction_time"]) && $requestData["transaction_time"] ? $requestData["transaction_time"] : NULL,
+                    "settlement_time" => isset($requestData["settlement_time"]) && $requestData["settlement_time"] ? $requestData["settlement_time"] : NULL,
+                    "expiry_time" => isset($requestData["expiry_time"]) && $requestData["expiry_time"] ? $requestData["expiry_time"] : NULL,
+                    "gross_amount" => isset($requestData["gross_amount"]) && $requestData["gross_amount"] ? $requestData["gross_amount"] : NULL
                 ]
             );
             PaymentMidtransLogModel::create(
