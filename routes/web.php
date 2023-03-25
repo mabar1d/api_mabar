@@ -132,4 +132,5 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 
 $router->group(['prefix' => 'api/payment'], function () use ($router) {
     $router->post('createTransactions', 'PaymentController@createPaymentTransactions');
+    $router->post('getListTransactions', 'PaymentController@getListTransactions');
 });

@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\LogApi;
 use App\Models\MasterTeam;
-use App\Models\PaymentMidtransModel;
+use App\Models\PaymentMidtransLogModel;
+use App\Models\PaymentStatusModel;
 use App\Models\Personnel;
 use App\Models\TeamTournament;
 use Exception;
@@ -139,7 +140,17 @@ class CallbackMidtransController extends Controller
                     }
                 }
             }
-            PaymentMidtransModel::create(
+            PaymentStatusModel::updateOrCreate(
+                [
+                    "user_id" => $userId,
+                    "order_id" => $orderId
+                ],
+                [
+                    "status_code" => isset($requestData["status_code"]) && $requestData["status_code"] ? $requestData["status_code"] : NULL,
+                    "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL
+                ]
+            );
+            PaymentMidtransLogModel::create(
                 [
                     "order_id" => $orderId,
                     "request_body" => isset($requestData) && $requestData ? json_encode($requestData) : NULL,
