@@ -131,6 +131,15 @@ class PaymentController extends Controller
                             $itemName = isset($getInfoOrder["name"]) && $getInfoOrder["name"] ? $getInfoOrder["name"] : NULL;
                         }
                         $rowPaymentStatus["item_name"] = $itemName;
+                        $paymentType = isset($rowPaymentStatus["payment_type"]) && $rowPaymentStatus["payment_type"] ? $rowPaymentStatus["payment_type"] : NULL;
+                        $vaNumber = isset($rowPaymentStatus["va_number"]) && $rowPaymentStatus["va_number"] ? $rowPaymentStatus["va_number"] : NULL;
+                        $bankName = isset($rowPaymentStatus["bank_name"]) && $rowPaymentStatus["bank_name"] ? $rowPaymentStatus["bank_name"] : NULL;
+                        if ($paymentType == "bank_transfer") {
+                            $paymentTypeName = "Virtual Account/Bank Transfer";
+                            $vaNumberFinal = $bankName . " - " . $vaNumber;
+                            $rowPaymentStatus["payment_type_name"] = $paymentTypeName;
+                            $rowPaymentStatus["va_final"] = $vaNumberFinal;
+                        }
                         $resultData[] = $rowPaymentStatus;
                     }
                     $response->code = '00';
