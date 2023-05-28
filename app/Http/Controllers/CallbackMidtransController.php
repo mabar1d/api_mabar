@@ -11,6 +11,7 @@ use App\Models\TeamTournament;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use stdClass;
 
 class CallbackMidtransController extends Controller
@@ -103,7 +104,20 @@ class CallbackMidtransController extends Controller
             $orderId = isset($requestData["order_id"]) && $requestData["order_id"] ? $requestData["order_id"] : NULL;
             $explodeOrderId = explode("-", $orderId);
             $userId = isset($explodeOrderId[2]) && $explodeOrderId[2] ? $explodeOrderId[2] : NULL;
+            $paymentType = isset($requestData["payment_type"]) && $requestData["payment_type"] ? $requestData["payment_type"] : NULL;
+            $bankName = NULL;
+            $vaNumber = NULL;
             $resultCircleApi = false;
+
+            if ($paymentType == "bank_transfer") {
+                if (!isset($requestData["va_numbers"])) {
+                    throw ValidationException::withMessages(['Wrong Format.']);
+                }
+            } elseif ($paymentType == "echannel") {
+                $bankName = isset($requestData["biller_code"]) && $requestData["biller_code"] ? $requestData["biller_code"] : NULL;
+                $vaNumber = isset($requestData["bill_key"]) && $requestData["bill_key"] ? $requestData["bill_key"] : NULL;
+            }
+
             if ($explodeOrderId[1] == "TR") { //register tournament
                 $tournamentId = isset($explodeOrderId[4]) && $explodeOrderId[4] ? $explodeOrderId[4] : NULL;
                 if ($requestData["status_code"] == 200 || $requestData["status_code"] == 201) { //payment status is settlement atau pending
@@ -140,6 +154,7 @@ class CallbackMidtransController extends Controller
                     }
                 }
             }
+
             PaymentStatusModel::updateOrCreate(
                 [
                     "user_id" => $userId,
@@ -151,7 +166,10 @@ class CallbackMidtransController extends Controller
                     "transaction_time" => isset($requestData["transaction_time"]) && $requestData["transaction_time"] ? $requestData["transaction_time"] : NULL,
                     "settlement_time" => isset($requestData["settlement_time"]) && $requestData["settlement_time"] ? $requestData["settlement_time"] : NULL,
                     "expiry_time" => isset($requestData["expiry_time"]) && $requestData["expiry_time"] ? $requestData["expiry_time"] : NULL,
-                    "gross_amount" => isset($requestData["gross_amount"]) && $requestData["gross_amount"] ? $requestData["gross_amount"] : NULL
+                    "gross_amount" => isset($requestData["gross_amount"]) && $requestData["gross_amount"] ? $requestData["gross_amount"] : NULL,
+                    "payment_type" => $paymentType,
+                    "bank_name" => $bankName,
+                    "va_number" => $vaNumber
                 ]
             );
             PaymentMidtransLogModel::create(
@@ -174,7 +192,7 @@ class CallbackMidtransController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
-        LogApi::createLog(1, $request->path(), json_encode($requestData), json_encode($response));
+        LogApi::createLog("MIDTRANS", $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 }

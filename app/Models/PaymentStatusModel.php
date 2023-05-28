@@ -19,7 +19,10 @@ class PaymentStatusModel extends Model
         'transaction_time',
         'settlement_time',
         'expiry_time',
-        'gross_amount'
+        'gross_amount',
+        'payment_type',
+        'bank_name',
+        'va_number'
     ];
     protected $hidden = array('created_at', 'updated_at');
 }

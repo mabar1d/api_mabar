@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\MidtransApi;
 use App\Models\LogApi;
+use App\Models\MasterTournament;
 use Illuminate\Http\Request;
 use App\Models\PaymentStatusModel;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +119,18 @@ class PaymentController extends Controller
                 $resultData = array();
                 if ($execQuery->first()) {
                     foreach ($execQuery as $rowPaymentStatus) {
+                        $orderId = $rowPaymentStatus["order_id"];
+                        $explodeOrderId = explode("-", $orderId);
+                        $typeCg = $explodeOrderId[1];
+                        $userCg = $explodeOrderId[2];
+                        $typeCgId = $explodeOrderId[4];
+                        if ($typeCg == "TR") {
+                            $getInfoOrder = MasterTournament::select("id", "name")
+                                ->where("id", $typeCgId)
+                                ->first();
+                            $itemName = isset($getInfoOrder["name"]) && $getInfoOrder["name"] ? $getInfoOrder["name"] : NULL;
+                        }
+                        $rowPaymentStatus["item_name"] = $itemName;
                         $resultData[] = $rowPaymentStatus;
                     }
                     $response->code = '00';
