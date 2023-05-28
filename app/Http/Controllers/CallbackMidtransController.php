@@ -174,7 +174,7 @@ class CallbackMidtransController extends Controller
             $response->code = '99';
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
-        // LogApi::createLog(, $request->path(), json_encode($requestData), json_encode($response));
+        LogApi::createLog(1, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
 }
