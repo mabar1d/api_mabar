@@ -113,6 +113,8 @@ class CallbackMidtransController extends Controller
                 if (!isset($requestData["va_numbers"])) {
                     throw ValidationException::withMessages(['Wrong Format.']);
                 }
+                $bankName = isset($requestData[0]["bank"]) && $requestData[0]["bank"] ? $requestData[0]["bank"] : NULL;
+                $vaNumber = isset($requestData[0]["va_number"]) && $requestData[0]["va_number"] ? $requestData[0]["va_number"] : NULL;
             } elseif ($paymentType == "echannel") {
                 $bankName = isset($requestData["biller_code"]) && $requestData["biller_code"] ? $requestData["biller_code"] : NULL;
                 $vaNumber = isset($requestData["bill_key"]) && $requestData["bill_key"] ? $requestData["bill_key"] : NULL;
@@ -186,70 +188,6 @@ class CallbackMidtransController extends Controller
             $response->desc = "Success Get Payment Status!";
             $response->data = [
                 "responseCirlceApi" => $resultCircleApi
-            ];
-        } catch (Exception $e) {
-            DB::rollback();
-            $response->code = '99';
-            $response->desc = 'Caught exception: ' .  $e->getMessage();
-        }
-        LogApi::createLog("MIDTRANS", $request->path(), json_encode($requestData), json_encode($response));
-        return response()->json($response);
-    }
-
-    public function recurring(Request $request)
-    {
-        $response = new stdClass();
-        $response->code = '';
-        $response->desc = '';
-        $requestData = $request->input();
-        DB::beginTransaction();
-        try {
-            PaymentMidtransLogModel::create(
-                [
-                    "order_id" => "recurring",
-                    "request_body" => isset($requestData) && $requestData ? json_encode($requestData) : NULL,
-                    "user_id" => "test",
-                    "status_code" => isset($requestData["status_code"]) && $requestData["status_code"] ? $requestData["status_code"] : NULL,
-                    "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL
-                ]
-            );
-            DB::commit();
-            $response->code = "00";
-            $response->desc = "Success Get Payment Status!";
-            $response->data = [
-                "responseCirlceApi" => $requestData
-            ];
-        } catch (Exception $e) {
-            DB::rollback();
-            $response->code = '99';
-            $response->desc = 'Caught exception: ' .  $e->getMessage();
-        }
-        LogApi::createLog("MIDTRANS", $request->path(), json_encode($requestData), json_encode($response));
-        return response()->json($response);
-    }
-
-    public function payAccount(Request $request)
-    {
-        $response = new stdClass();
-        $response->code = '';
-        $response->desc = '';
-        $requestData = $request->input();
-        DB::beginTransaction();
-        try {
-            PaymentMidtransLogModel::create(
-                [
-                    "order_id" => "payAccount",
-                    "request_body" => isset($requestData) && $requestData ? json_encode($requestData) : NULL,
-                    "user_id" => "test",
-                    "status_code" => isset($requestData["status_code"]) && $requestData["status_code"] ? $requestData["status_code"] : NULL,
-                    "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL
-                ]
-            );
-            DB::commit();
-            $response->code = "00";
-            $response->desc = "Success Get Payment Status!";
-            $response->data = [
-                "responseCirlceApi" => $requestData
             ];
         } catch (Exception $e) {
             DB::rollback();
