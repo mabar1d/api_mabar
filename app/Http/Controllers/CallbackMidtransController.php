@@ -57,16 +57,6 @@ class CallbackMidtransController extends Controller
         header('Content-Type: application/json');
         // call charge API using request body passed by mobile SDK
         $charge_result = $this->chargeAPI($api_url, $server_key, $request_body);
-        PaymentMidtransLogModel::create(
-            [
-                "order_id" => "testing",
-                "request_body" => isset($result) && $result ? json_encode($result) : NULL,
-                "user_id" => 99,
-                "status_code" => isset($requestData["status_code"]) && $requestData["status_code"] ? $requestData["status_code"] : NULL,
-                "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL
-            ]
-        );
-
         // set the response http status code
         http_response_code($charge_result['http_code']);
         // then print out the response body
