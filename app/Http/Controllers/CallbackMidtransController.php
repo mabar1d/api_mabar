@@ -93,7 +93,7 @@ class CallbackMidtransController extends Controller
         return $result;
     }
 
-    public function finish(Request $request)
+    public function handle(Request $request)
     {
         $response = new stdClass();
         $response->code = '';
@@ -113,8 +113,8 @@ class CallbackMidtransController extends Controller
                 if (!isset($requestData["va_numbers"])) {
                     throw ValidationException::withMessages(['Wrong Format.']);
                 }
-                $bankName = isset($requestData[0]["bank"]) && $requestData[0]["bank"] ? $requestData[0]["bank"] : NULL;
-                $vaNumber = isset($requestData[0]["va_number"]) && $requestData[0]["va_number"] ? $requestData[0]["va_number"] : NULL;
+                $bankName = isset($requestData["va_numbers"][0]["bank"]) && $requestData["va_numbers"][0]["bank"] ? $requestData["va_numbers"][0]["bank"] : NULL;
+                $vaNumber = isset($requestData["va_numbers"][0]["va_number"]) && $requestData["va_numbers"][0]["va_number"] ? $requestData["va_numbers"][0]["va_number"] : NULL;
             } elseif ($paymentType == "echannel") {
                 $bankName = isset($requestData["biller_code"]) && $requestData["biller_code"] ? $requestData["biller_code"] : NULL;
                 $vaNumber = isset($requestData["bill_key"]) && $requestData["bill_key"] ? $requestData["bill_key"] : NULL;

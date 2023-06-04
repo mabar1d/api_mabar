@@ -121,9 +121,7 @@ $router->group(['prefix' => 'api'], function ($router) {
 
     //CALLBACK MIDTRANS
     $router->post('callbackMidtransNotification/charge', 'CallbackMidtransController@index');
-    $router->post('callbackMidtrans/finish', 'CallbackMidtransController@finish');
-    $router->post('callbackMidtrans/recurring', 'CallbackMidtransController@recurring');
-    $router->post('callbackMidtrans/pay_account', 'CallbackMidtransController@payAccount');
+    $router->post('callbackMidtrans/handle', 'CallbackMidtransController@handle');
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
