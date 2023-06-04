@@ -98,7 +98,7 @@ class CallbackMidtransController extends Controller
         $response = new stdClass();
         $response->code = '';
         $response->desc = '';
-        $requestData = json_decode($request->input(), true);
+        $requestData = $request->input();
         DB::beginTransaction();
         try {
             $orderId = isset($requestData["order_id"]) && $requestData["order_id"] ? $requestData["order_id"] : NULL;
