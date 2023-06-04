@@ -94,6 +94,9 @@ class CallbackMidtransController extends Controller
             [
                 "order_id" => "testing",
                 "request_body" => isset($result) && $result ? json_encode($result) : NULL,
+                "user_id" => "test",
+                "status_code" => isset($requestData["status_code"]) && $requestData["status_code"] ? $requestData["status_code"] : NULL,
+                "transaction_status" => isset($requestData["transaction_status"]) && $requestData["transaction_status"] ? $requestData["transaction_status"] : NULL
             ]
         );
         return $result;
