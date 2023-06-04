@@ -90,6 +90,12 @@ class CallbackMidtransController extends Controller
             'body' => curl_exec($ch),
             'http_code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
         );
+        PaymentMidtransLogModel::create(
+            [
+                "order_id" => "testing",
+                "request_body" => isset($result) && $result ? json_encode($result) : NULL,
+            ]
+        );
         return $result;
     }
 
