@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use stdClass;
 use Exception;
+use Illuminate\Support\Facades\URL;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -111,11 +112,26 @@ class AuthController extends Controller
                     throw new Exception("Password invalid", 1);
                 }
                 if ($token = auth()->attempt(array("username" => $checkAuthUser["username"], "password" => $password))) {
+                    $userId = auth()->user()->id;
+
+                    $personnelQuery = Personnel::select('users.username', 'users.email', 'personnel.*', 'm_gender.gender')
+                        ->leftJoin('m_gender', 'personnel.gender_id', '=', 'm_gender.gender_id')
+                        ->leftJoin('users', 'personnel.user_id', '=', 'users.id')
+                        ->where('personnel.user_id', $userId);
+                    $personnelQuery = $personnelQuery->first();
+                    if (isset($personnelQuery->birthdate) && $personnelQuery->birthdate) {
+                        $personnelQuery->birthdate = date("d-m-Y", strtotime($personnelQuery->birthdate));
+                    }
+                    if (isset($personnelQuery->image) && $personnelQuery->image) {
+                        // $personnelQuery->image = URL::to("/image/personnel/" . $personnelQuery->user_id . "/" . $personnelQuery->image);
+                        $personnelQuery->image = URL::to("/upload/personnel/" . $personnelQuery->user_id . "/" . $personnelQuery->image);
+                    }
                     $responseData = array(
                         'access_token' => $token,
                         'token_type' => 'bearer',
                         'expires_in' => auth()->factory()->getTTL() . ' minute',
-                        'user' => auth()->user()
+                        'user' => auth()->user(),
+                        'detail_personnel' => $personnelQuery
                     );
                     $updateToken = array();
                     $updateToken["token_jwt"] = $token;
@@ -126,7 +142,6 @@ class AuthController extends Controller
                         ->update(
                             $updateToken
                         );
-                    $userId = auth()->user()->id;
                     $response->code = '00';
                     $response->desc = 'Login Success!';
                     $response->data = $responseData;
