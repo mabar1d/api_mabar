@@ -184,6 +184,7 @@ class NewsModel extends Model
         if (isset($filter["limit"]) && $filter["limit"]) {
             $query = $query->limit($filter["limit"]);
         }
+        $query = $query->orderBy("created_at", "DESC");
         $query = $query->get();
         if ($query) {
             $result = $query->toArray();
