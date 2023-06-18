@@ -440,4 +440,69 @@ class NewsController extends Controller
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
     }
+
+    public function getListWeb(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'string',
+                'search' => 'string',
+                'offset' => 'numeric',
+                'limit' => 'numeric'
+            ]);
+            $search = isset($requestData['search']) && $requestData['search'] ? trim($requestData['search']) : NULL;
+            $offset = !empty($requestData['offset']) ? trim($requestData['offset']) : 0;
+            $limit = !empty($requestData['limit']) ? trim($requestData['limit']) : 4;
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            if (!$validator->fails()) {
+                $getList = NewsModel::getListNewsDetail(array(
+                    'status' => "1",
+                    'search' => $search,
+                    'offset' => $offset,
+                    'limit' => $limit
+                ));
+                // if ($getList) {
+                $resultData = array();
+                foreach ($getList as $row) {
+                    if ($row['image']) {
+                        $row['image'] = URL::to("/upload/news/" . $row['image']);
+                    }
+                    $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
+                    $row['linkShare'] = env("WEB_DOMAIN") . "/news/" . $row["slug"];
+
+                    //start get news tag
+                    $getInfo['tag'] = array();
+                    $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $row["id"]));
+                    foreach ($getNewsTag as $newsTag) {
+                        $row['tag'][] = $newsTag["name"];
+                    }
+                    //end get news tag
+
+                    $resultData[] = $row;
+                }
+                $response->code = '00';
+                $response->desc = 'Get List News Success!';
+                $response->data = $resultData;
+                DB::commit();
+                // } else {
+                //     $response->code = '02';
+                //     $response->desc = 'List News is Empty.';
+                // }
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
 }

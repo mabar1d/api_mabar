@@ -103,6 +103,7 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('updateNews', 'NewsController@update');
     $router->post('deleteNews', 'NewsController@delete');
     $router->post('getListNews', 'NewsController@getList');
+    $router->post('getListNewsWeb', 'NewsController@getListWeb');
     $router->post('getInfoNews', 'NewsController@getInfo');
 
     //VIDEO
