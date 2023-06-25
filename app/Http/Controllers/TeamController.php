@@ -756,9 +756,14 @@ class TeamController extends Controller
                                         }
                                     }
                                     $execQuery_row['team_in_tournament'] = $teamInThisTournament;
+                                    $getPersonnel = Personnel::where('user_id', $execQuery_row["id_created_by"])->first();
+                                    if ($getPersonnel) {
+                                        $created_name = $getPersonnel->firstname . ' ' . $getPersonnel->lastname;
+                                    }
+                                    $execQuery_row["id_created_by"] = isset($execQuery_row["id_created_by"]) && $execQuery_row["id_created_by"] ? trim($execQuery_row["id_created_by"]) : NULL;
+                                    $execQuery_row["created_name"] = isset($created_name) && $created_name ? trim($created_name) : NULL;
                                     if ($execQuery_row['image']) {
-                                        // $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
-                                        $execQuery_row['image'] = URL::to("/upload/team/" . $execQuery_row["id"] . "/" . $execQuery_row["image"]);
+                                        $execQuery_row['image'] = URL::to("/upload/tournament/" . $execQuery_row["id"] . "/" . $execQuery_row["image"]);
                                     }
                                     array_push($result, $execQuery_row);
                                 }
