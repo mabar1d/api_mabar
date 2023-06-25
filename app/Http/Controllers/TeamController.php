@@ -740,6 +740,22 @@ class TeamController extends Controller
                             if ($execQuery->first()) {
                                 $result = array();
                                 foreach ($execQuery->toArray() as $execQuery_row) {
+                                    $teamInThisTournament = array();
+                                    $getTeamInThisTournamentArray = TeamTournament::where("tournament_id", $execQuery_row["id"])->get();
+                                    if ($getTeamInThisTournamentArray) {
+                                        $getTeamInThisTournamentArray = $getTeamInThisTournamentArray->toArray();
+                                        foreach ($getTeamInThisTournamentArray as $rowTeamThisTournament) {
+                                            $getTeamInfo = MasterTeam::find($rowTeamThisTournament["team_id"]);
+                                            if ($getTeamInfo) {
+                                                $getTeamInfo = $getTeamInfo->toArray();
+                                                $teamInThisTournament[] = array(
+                                                    "team_id" => $getTeamInfo["id"],
+                                                    "team_name" => $getTeamInfo["name"]
+                                                );
+                                            }
+                                        }
+                                    }
+                                    $execQuery_row['team_in_tournament'] = $teamInThisTournament;
                                     if ($execQuery_row['image']) {
                                         // $execQuery_row['image'] = URL::to("/image/masterTeam/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
                                         $execQuery_row['image'] = URL::to("/upload/team/" . $execQuery_row["id"] . "/" . $execQuery_row["image"]);
