@@ -29,6 +29,16 @@ class MasterTournament extends Model
     ];
     protected $hidden = array('created_at', 'updated_at');
 
+    public function getPrizeAttribute($value)
+    {
+        return floatval($value);
+    }
+
+    public function getRegisterFeeAttribute($value)
+    {
+        return floatval($value);
+    }
+
     public static function getInfo($filter = NULL)
     {
         $result = array();

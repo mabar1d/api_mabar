@@ -426,11 +426,11 @@ class TournamentController extends Controller
                             $data->end_date = isset($execQuery_row->end_date) && $execQuery_row->end_date ? date_format(date_create(trim($execQuery_row->end_date)), "d-m-Y") : NULL;
                             $data->register_date_start = isset($execQuery_row->register_date_start) && $execQuery_row->register_date_start ? date_format(date_create(trim($execQuery_row->register_date_start)), "d-m-Y") : NULL;
                             $data->register_date_end = isset($execQuery_row->register_date_end) && $execQuery_row->register_date_end ? date_format(date_create(trim($execQuery_row->register_date_end)), "d-m-Y") : NULL;
-                            $data->register_fee = isset($execQuery_row->register_fee) && $execQuery_row->register_fee ? trim(number_format($execQuery_row->register_fee, 0, ",", ".")) : "0";
+                            $data->register_fee = isset($execQuery_row->register_fee) && $execQuery_row->register_fee ? trim($execQuery_row->register_fee) : "0";
                             $data->type = isset($execQuery_row->type) && $execQuery_row->type ? trim($execQuery_row->type) : NULL;
                             $data->number_of_participants = isset($execQuery_row->number_of_participants) && $execQuery_row->number_of_participants ? trim(strval($execQuery_row->number_of_participants)) : NULL;
                             $data->detail = isset($execQuery_row->detail) && $execQuery_row->detail ? trim($execQuery_row->detail) : NULL;
-                            $data->prize = isset($execQuery_row->prize) && $execQuery_row->prize ? trim(number_format($execQuery_row->prize, 0, ",", ".")) : "0";
+                            $data->prize = isset($execQuery_row->prize) && $execQuery_row->prize ? trim($execQuery_row->prize) : "0";
                             $data->image = isset($image) && $image ? trim($image) : NULL;
                             $data->game_id = isset($execQuery_row->game_id) && $execQuery_row->game_id ? trim($execQuery_row->game_id) : NULL;
                             $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
@@ -528,11 +528,11 @@ class TournamentController extends Controller
                     $data->end_date = isset($getInfoTournament->end_date) && $getInfoTournament->end_date ? date_format(date_create(trim($getInfoTournament->end_date)), "d-m-Y") : NULL;
                     $data->register_date_start = isset($getInfoTournament->register_date_start) && $getInfoTournament->register_date_start ? date_format(date_create(trim($getInfoTournament->register_date_start)), "d-m-Y") : NULL;
                     $data->register_date_end = isset($getInfoTournament->register_date_end) && $getInfoTournament->register_date_end ? date_format(date_create(trim($getInfoTournament->register_date_end)), "d-m-Y") : NULL;
-                    $data->register_fee = isset($getInfoTournament->register_fee) && $getInfoTournament->register_fee ? trim(number_format($getInfoTournament->register_fee, 0, ",", ".")) : "0";
+                    $data->register_fee = isset($getInfoTournament->register_fee) && $getInfoTournament->register_fee ? trim($getInfoTournament->register_fee) : "0";
                     $data->type = isset($getInfoTournament->type) && $getInfoTournament->type ? trim($getInfoTournament->type) : NULL;
                     $data->number_of_participants = isset($getInfoTournament->number_of_participants) && $getInfoTournament->number_of_participants ? trim(strval($getInfoTournament->number_of_participants)) : NULL;
                     $data->detail = isset($getInfoTournament->detail) && $getInfoTournament->detail ? trim($getInfoTournament->detail) : NULL;
-                    $data->prize = isset($getInfoTournament->prize) && $getInfoTournament->prize ? trim(number_format($getInfoTournament->prize, 0, ",", ".")) : "0";
+                    $data->prize = isset($getInfoTournament->prize) && $getInfoTournament->prize ? trim($getInfoTournament->prize) : "0";
                     $data->image = isset($image) && $image ? trim($image) : NULL;
                     $data->game_id = isset($getInfoTournament->game_id) && $getInfoTournament->game_id ? trim($getInfoTournament->game_id) : NULL;
                     $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
@@ -764,17 +764,17 @@ class TournamentController extends Controller
                             $data->end_date = isset($execQuery_row->end_date) && $execQuery_row->end_date ? date_format(date_create(trim($execQuery_row->end_date)), "d-m-Y") : NULL;
                             $data->register_date_start = isset($execQuery_row->register_date_start) && $execQuery_row->register_date_start ? date_format(date_create(trim($execQuery_row->register_date_start)), "d-m-Y") : NULL;
                             $data->register_date_end = isset($execQuery_row->register_date_end) && $execQuery_row->register_date_end ? date_format(date_create(trim($execQuery_row->register_date_end)), "d-m-Y") : NULL;
-                            $data->register_fee = isset($execQuery_row->register_fee) && $execQuery_row->register_fee ? trim(number_format($execQuery_row->register_fee, 0, ",", ".")) : "0";
+                            $data->register_fee = isset($execQuery_row->register_fee) && $execQuery_row->register_fee ? trim($execQuery_row->register_fee) : "0";
                             $data->type = isset($execQuery_row->type) && $execQuery_row->type ? trim($execQuery_row->type) : NULL;
                             $data->number_of_participants = isset($execQuery_row->number_of_participants) && $execQuery_row->number_of_participants ? trim(strval($execQuery_row->number_of_participants)) : NULL;
                             $data->detail = isset($execQuery_row->detail) && $execQuery_row->detail ? trim($execQuery_row->detail) : NULL;
-                            $data->prize = isset($execQuery_row->prize) && $execQuery_row->prize ? trim(number_format($execQuery_row->prize, 0, ",", ".")) : "0";
+                            $data->prize = isset($execQuery_row->prize) && $execQuery_row->prize ? trim($execQuery_row->prize) : "0";
                             $data->image = isset($image) && $image ? trim($image) : NULL;
                             $data->game_id = isset($execQuery_row->game_id) && $execQuery_row->game_id ? trim($execQuery_row->game_id) : NULL;
                             $data->title_game = isset($title_game) && $title_game ? trim($title_game) : NULL;
                             $data->rating = isset($ratingTournament) && $ratingTournament ? trim($ratingTournament) : NULL;
                             $data->team_in_tournament = $teamInThisTournament;
-                            $data->terms_condition = isset($execQuery_row->terms_condition) && $execQuery_row->terms_condition ? trim($execQuery_row->terms_condition) : NULL;;
+                            $data->terms_condition = isset($execQuery_row->terms_condition) && $execQuery_row->terms_condition ? trim($execQuery_row->terms_condition) : NULL;
                             array_push($result, $data);
                         }
                         $response->code = '00';

@@ -25,4 +25,9 @@ class PaymentStatusModel extends Model
         'va_number'
     ];
     protected $hidden = array('created_at', 'updated_at');
+
+    public function getGrossAmountAttribute($value)
+    {
+        return floatval($value);
+    }
 }
