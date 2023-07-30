@@ -45,6 +45,11 @@ class Authenticate
         try {
             if ($token = JWTAuth::getToken()) {
                 JWTAuth::checkOrFail();
+            } else {
+                return response(array(
+                    'code' => '05',
+                    'desc' => 'Token Not Valid, please relogin.'
+                ), 200);
             }
         } catch (TokenExpiredException $e) {
             $expired = true;
