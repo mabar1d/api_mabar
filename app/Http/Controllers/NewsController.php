@@ -24,7 +24,7 @@ class NewsController extends Controller
     {
         $token = $request->bearerToken();
         if ($token != env('GOD_BEARER')) {
-            $this->middleware('auth:api', ['except' => ['getListNews', 'getInfoNews']]);
+            $this->middleware('auth:api', ['except' => ['getList', 'getInfo']]);
         }
     }
 

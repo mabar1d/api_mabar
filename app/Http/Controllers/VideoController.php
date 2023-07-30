@@ -22,7 +22,7 @@ class VideoController extends Controller
     {
         $token = $request->bearerToken();
         if ($token != env('GOD_BEARER')) {
-            $this->middleware('auth:api', ['except' => ['getListVideo', 'getInfoVideo']]);
+            $this->middleware('auth:api', ['except' => ['getList', 'getInfo']]);
         }
     }
 
