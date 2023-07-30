@@ -107,6 +107,7 @@ class PaymentController extends Controller
                 $query->where('status_code', $paymentCode);
                 if ($search) {
                     $query->where('va_number', 'like', $search . '%');
+                    $query->orWhere('order_id', 'like', $search . '%');
                 }
                 if ($page > 1) {
                     $offset = ($page - 1) * $limit;
