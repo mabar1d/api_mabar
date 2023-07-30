@@ -106,7 +106,7 @@ class PaymentController extends Controller
                 // $query->where('order_id', $orderId);
                 $query->where('status_code', $paymentCode);
                 if ($search) {
-                    $query->where('name', 'like', $search . '%');
+                    $query->where('va_number', 'like', $search . '%');
                 }
                 if ($page > 1) {
                     $offset = ($page - 1) * $limit;
