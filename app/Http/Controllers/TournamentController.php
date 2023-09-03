@@ -872,30 +872,31 @@ class TournamentController extends Controller
                 if ($checkDataExist) {
                     $tournamentDetail = $checkDataExist->toArray();
                     if ($tournamentDetail["id_created_by"] == $userId || $userId == "web") {
-                        // if (strtotime(date("Y/m/d")) >= strtotime($tournamentDetail["start_date"])) {
-                        $round = 0;
-                        foreach ($arrayMatchTournament as $rowArrayMatchTournament) {
-                            $round++;
-                            TreeTournamentMatchModel::updateOrCreate(
-                                [
-                                    'id' => isset($rowArrayMatchTournament["match_id"]) && $rowArrayMatchTournament["match_id"] ? $rowArrayMatchTournament["match_id"] : NULL
-                                ],
-                                [
-                                    'tournament_id' => $tournamentId,
-                                    'tournament_phase' => 0,
-                                    'round' => $round,
-                                    'home_team_id' => isset($rowArrayMatchTournament["home_team_id"]) && $rowArrayMatchTournament["home_team_id"] ? $rowArrayMatchTournament["home_team_id"] : NULL,
-                                    'opponent_team_id' => isset($rowArrayMatchTournament["opponent_team_id"]) && $rowArrayMatchTournament["opponent_team_id"] ? $rowArrayMatchTournament["opponent_team_id"] : NULL,
-                                    'playing_date' => isset($rowArrayMatchTournament["date"]) && $rowArrayMatchTournament["date"] ? date("Y-m-d", strtotime($rowArrayMatchTournament["date"])) : NULL
-                                ]
-                            );
+                        if (strtotime(date("Y/m/d")) <= strtotime($tournamentDetail["start_date"])) {
+                            TreeTournamentMatchModel::where("tournament_id", $tournamentId)->delete();
+                            $round = 0;
+                            foreach ($arrayMatchTournament as $rowArrayMatchTournament) {
+                                $round++;
+                                TreeTournamentMatchModel::updateOrCreate(
+                                    [
+                                        'id' => isset($rowArrayMatchTournament["match_id"]) && $rowArrayMatchTournament["match_id"] ? $rowArrayMatchTournament["match_id"] : NULL
+                                    ],
+                                    [
+                                        'tournament_id' => $tournamentId,
+                                        'tournament_phase' => 0,
+                                        'round' => $round,
+                                        'home_team_id' => isset($rowArrayMatchTournament["home_team_id"]) && $rowArrayMatchTournament["home_team_id"] ? $rowArrayMatchTournament["home_team_id"] : NULL,
+                                        'opponent_team_id' => isset($rowArrayMatchTournament["opponent_team_id"]) && $rowArrayMatchTournament["opponent_team_id"] ? $rowArrayMatchTournament["opponent_team_id"] : NULL,
+                                        'playing_date' => isset($rowArrayMatchTournament["date"]) && $rowArrayMatchTournament["date"] ? date("Y-m-d", strtotime($rowArrayMatchTournament["date"])) : NULL
+                                    ]
+                                );
+                            }
+                            $response->code = '00';
+                            $response->desc = 'Set Tournament Match Success!';
+                        } else {
+                            $response->code = '02';
+                            $response->desc = "Tournament Is Running! Can't Save Matching Tournament";
                         }
-                        $response->code = '00';
-                        $response->desc = 'Set Tournament Match Success!';
-                        // } else {
-                        //     $response->code = '02';
-                        //     $response->desc = "Tournament Is Running! Can't Save Matching Tournament";
-                        // }
                     } else {
                         $response->code = '02';
                         $response->desc = "You're Not Host of This Tournament!";
@@ -953,8 +954,6 @@ class TournamentController extends Controller
                                     $arrayPerMatch = array();
                                 }
                             }
-                            array_push($arrayMatchResult, $arrayPerMatch);
-
                             $resultArray = array();
                             foreach ($arrayMatchResult as $rowMatchResult) {
                                 $homeTeamId = isset($rowMatchResult[0]) && $rowMatchResult[0] ? $rowMatchResult[0] : NULL;
