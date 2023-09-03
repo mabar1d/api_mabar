@@ -345,6 +345,11 @@ class TournamentController extends Controller
         $response->code = '';
         $response->desc = '';
         $requestData = $request->input();
+        $search = isset($requestData['search']) ? trim($requestData['search']) : NULL;
+        $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
+        $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+        $filterGame = isset($requestData['filter_game']) ? trim($requestData['filter_game']) : array();
+
         DB::beginTransaction();
         try {
             // $requestUser = auth()->user()->toArray();
@@ -352,18 +357,17 @@ class TournamentController extends Controller
                 'user_id' => 'required|string',
                 'search' => 'string',
                 'page' => 'numeric',
-                'filter_game' => 'required|string', 'min:2'
+                'filter_game' => 'string'
             ]);
-            $search = trim($requestData['search']);
-            $page = !empty($requestData['page']) ? trim($requestData['page']) : 1;
-            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             if (!$validator->fails()) {
-                $filter_game = json_decode($requestData['filter_game'], true);
-                if ($filter_game || empty($filter_game)) {
+                if (isset($filterGame) && $filterGame) {
+                    $filterGame = json_decode($filterGame, true);
+                }
+                if ($filterGame || empty($filterGame)) {
                     $limit = 20;
                     $query = MasterTournament::select('*');
-                    if (isset($filter_game) && $filter_game) {
-                        $query->whereIn('game_id', $filter_game);
+                    if (isset($filterGame) && $filterGame) {
+                        $query->whereIn('game_id', $filterGame);
                     }
                     if ($search) {
                         $query->where('name', 'like', $search . '%');
@@ -867,7 +871,7 @@ class TournamentController extends Controller
                 $checkDataExist = MasterTournament::where("id", $tournamentId)->first();
                 if ($checkDataExist) {
                     $tournamentDetail = $checkDataExist->toArray();
-                    if ($tournamentDetail["id_created_by"] == $userId) {
+                    if ($tournamentDetail["id_created_by"] == $userId || $userId == "web") {
                         // if (strtotime(date("Y/m/d")) >= strtotime($tournamentDetail["start_date"])) {
                         $round = 0;
                         foreach ($arrayMatchTournament as $rowArrayMatchTournament) {
@@ -932,7 +936,7 @@ class TournamentController extends Controller
                     ->first();
                 if ($checkDataExist) {
                     $tournamentDetail = $checkDataExist->toArray();
-                    if ($tournamentDetail["id_created_by"] == $userId) {
+                    if ($tournamentDetail["id_created_by"] == $userId || $userId == "web") {
                         // if (strtotime(date("Y/m/d")) <= strtotime($tournamentDetail["start_date"])) {
                         $getTeamTournament = TeamTournament::where("tournament_id", $tournamentId)
                             ->where("active", 1)
@@ -953,10 +957,21 @@ class TournamentController extends Controller
 
                             $resultArray = array();
                             foreach ($arrayMatchResult as $rowMatchResult) {
+                                $homeTeamId = isset($rowMatchResult[0]) && $rowMatchResult[0] ? $rowMatchResult[0] : NULL;
+                                $awayTeamId = isset($rowMatchResult[1]) && $rowMatchResult[1] ? $rowMatchResult[1] : NULL;
+
+                                if ($homeTeamId) {
+                                    $getInfoHomeTeam = MasterTeam::find($homeTeamId);
+                                }
+                                if ($awayTeamId) {
+                                    $getInfoAwayTeam = MasterTeam::find($awayTeamId);
+                                }
                                 $matching = array(
                                     "matching_id" => null,
-                                    "home_team_id" => isset($rowMatchResult[0]) && $rowMatchResult[0] ? $rowMatchResult[0] : NULL,
-                                    "opponent_team_id" => isset($rowMatchResult[1]) && $rowMatchResult[1] ? $rowMatchResult[1] : NULL
+                                    "home_team_id" => $homeTeamId,
+                                    "home_team_name" => isset($getInfoHomeTeam["name"]) && $getInfoHomeTeam["name"] ? $getInfoHomeTeam["name"] : NULL,
+                                    "away_team_id" => $awayTeamId,
+                                    "away_team_name" => isset($getInfoAwayTeam["name"]) && $getInfoAwayTeam["name"] ? $getInfoAwayTeam["name"] : NULL,
                                 );
                                 array_push($resultArray, $matching);
                             }
@@ -1127,7 +1142,7 @@ class TournamentController extends Controller
                     ->first();
                 if ($checkDataExist) {
                     $tournamentDetail = $checkDataExist->toArray();
-                    if ($tournamentDetail["id_created_by"] == $userId) {
+                    if ($tournamentDetail["id_created_by"] == $userId || $userId == "web") {
                         if (strtotime(date("Y/m/d")) <= strtotime($tournamentDetail["start_date"])) {
                             if ($tournamentDetail["type"] == "2") {
                                 $getTeamTournament = TeamTournament::where("tournament_id", $tournamentId)
@@ -1211,7 +1226,7 @@ class TournamentController extends Controller
                 $checkDataExist = MasterTournament::find($tournamentId)->first();
                 if ($checkDataExist) {
                     $tournamentDetail = $checkDataExist->toArray();
-                    if ($tournamentDetail["id_created_by"] == $userId) {
+                    if ($tournamentDetail["id_created_by"] == $userId || $userId == "web") {
                         if (strtotime(date("Y/m/d")) < strtotime($tournamentDetail["start_date"])) {
                             if ($tournamentDetail["type"] == "2") {
                                 foreach ($GroupTournamentArray as $rowGroupTournamentArray) {
@@ -1452,7 +1467,7 @@ class TournamentController extends Controller
                 $checkDataExist = StandingTournamentMatchModel::getInfo(array("id" => $match_id));
                 if ($checkDataExist) {
                     $tournamentDetail = MasterTournament::getInfo(array("id" => $checkDataExist["tournament_id"]));
-                    if ($tournamentDetail["id_created_by"] == $userId) {
+                    if ($tournamentDetail["id_created_by"] == $userId || $userId == "web") {
                         if (strtotime(date("Y/m/d")) >= strtotime($tournamentDetail["start_date"])) {
                             StandingTournamentMatchModel::updateOrCreate(
                                 [
