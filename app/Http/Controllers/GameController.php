@@ -123,7 +123,7 @@ class GameController extends Controller
                 $checkMasterGameExist = MasterGame::where('id', $gameId)->first();
                 if ($checkMasterGameExist) {
                     // MasterGame::where('id', $gameId)->delete();
-                    $destinationPath = 'public/upload/masterGame/' . $gameId . '/' . $checkMasterGameExist->image;
+                    $destinationPath = 'public/upload/masterGame/' . $checkMasterGameExist->image;
                     if (file_exists(base_path($destinationPath))) {
                         unlink(base_path($destinationPath));
                     }
@@ -180,7 +180,7 @@ class GameController extends Controller
                     foreach ($execQuery->toArray() as $execQuery_row) {
                         if ($execQuery_row['image']) {
                             // $execQuery_row['image'] = URL::to("/image/masterGame/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
-                            $execQuery_row['image'] = URL::to("/upload/master_game/" . $execQuery_row['id'] . "/" . $execQuery_row['image']);
+                            $execQuery_row['image'] = URL::to("/upload/masterGame/" . $execQuery_row['image']);
                         }
                         array_push($result, $execQuery_row);
                     }
@@ -226,7 +226,7 @@ class GameController extends Controller
                     $response->desc = 'Get Info Master Game Success!';
                     if ($getInfoMasterGame->image) {
                         // $getInfoMasterGame->image = URL::to("/image/masterGame/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
-                        $getInfoMasterGame->image = URL::to("/upload/master_game/" . $getInfoMasterGame->id . "/" . $getInfoMasterGame->image);
+                        $getInfoMasterGame->image = URL::to("/upload/masterGame/" . $getInfoMasterGame->image);
                     }
                     $response->data = $getInfoMasterGame;
                 } else {
