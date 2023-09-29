@@ -403,26 +403,25 @@ class NewsController extends Controller
             $requestData = $request->all();
             $validator = Validator::make($requestData, [
                 'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
-                'user_id' => 'required|numeric'
+                'user_id' => 'required|numeric',
+                'news_id' => 'required|numeric'
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-            $gameId = isset($requestData['game_id']) ? trim($requestData['game_id']) : NULL;
+            $createdNewsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
             if (!$validator->fails()) {
                 if ($request->hasFile('image_file')) {
-                    // $file = $request->file('image_file');
-                    // $fileExtension = $file->getClientOriginalExtension();
-                    $filenameQuestion = 'master_game_' . $gameId . '.jpg';
-                    $destinationPath = 'public/upload/masterGame/' . $gameId;
+                    $fileName = 'news_' . $createdNewsId . '.jpg';
+                    $destinationPath = 'public/upload/news/';
                     if (!file_exists(base_path($destinationPath))) {
                         mkdir(base_path($destinationPath), 0775, true);
                     }
-                    $request->file('image_file')->move(base_path($destinationPath . '/'), $filenameQuestion);
-                    MasterGame::where('id', $gameId)
+                    $request->file('image_file')->move(base_path($destinationPath . '/'), $fileName);
+                    NewsModel::find($createdNewsId)
                         ->update([
-                            'image' => $filenameQuestion
+                            'image' => $fileName
                         ]);
                     $response->code = '00';
-                    $response->desc = 'Upload Success.';
+                    $response->desc = 'File Has Uploaded.';
                     DB::commit();
                 } else {
                     $response->code = '02';

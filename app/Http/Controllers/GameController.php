@@ -263,20 +263,19 @@ class GameController extends Controller
             $gameId = isset($requestData['game_id']) ? trim($requestData['game_id']) : NULL;
             if (!$validator->fails()) {
                 if ($request->hasFile('image_file')) {
-                    // $file = $request->file('image_file');
-                    // $fileExtension = $file->getClientOriginalExtension();
                     $filenameQuestion = 'master_game_' . $gameId . '.jpg';
                     $destinationPath = 'public/upload/masterGame/' . $gameId;
                     if (!file_exists(base_path($destinationPath))) {
                         mkdir(base_path($destinationPath), 0775, true);
                     }
                     $request->file('image_file')->move(base_path($destinationPath . '/'), $filenameQuestion);
-                    MasterGame::where('id', $gameId)
+                    MasterGame::find($gameId)
                         ->update([
                             "image" => $filenameQuestion
                         ]);
                     $response->code = '00';
-                    $response->desc = 'Upload Success.';
+                    $response->desc = 'File Has Uploaded.';
+                    DB::commit();
                 } else {
                     $response->code = '02';
                     $response->desc = 'Has no File Uploaded.';
@@ -285,7 +284,6 @@ class GameController extends Controller
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
-            DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';

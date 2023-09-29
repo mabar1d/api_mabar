@@ -105,6 +105,7 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('getListNews', 'NewsController@getList');
     $router->post('getListNewsWeb', 'NewsController@getListWeb');
     $router->post('getInfoNews', 'NewsController@getInfo');
+    $router->post('uploadImageNews', 'NewsController@uploadImage');
 
     //VIDEO
     $router->post('createVideo', 'VideoController@create');
