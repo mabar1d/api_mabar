@@ -402,27 +402,22 @@ class NewsController extends Controller
         try {
             $requestData = $request->all();
             $validator = Validator::make($requestData, [
-                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
-                'user_id' => 'required|numeric',
-                'news_id' => 'required|numeric'
+                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024'
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
-            $createdNewsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
             if (!$validator->fails()) {
                 if ($request->hasFile('image_file')) {
-                    $fileName = 'news_' . $createdNewsId . '.jpg';
+                    $fileName = bin2hex(openssl_random_pseudo_bytes(10)) . '.jpg';
                     $destinationPath = 'public/upload/news/';
                     if (!file_exists(base_path($destinationPath))) {
                         mkdir(base_path($destinationPath), 0775, true);
                     }
                     $request->file('image_file')->move(base_path($destinationPath . '/'), $fileName);
-                    NewsModel::find($createdNewsId)
-                        ->update([
-                            'image' => $fileName
-                        ]);
                     $response->code = '00';
                     $response->desc = 'File Has Uploaded.';
-                    DB::commit();
+                    $response->data = [
+                        'filename' => $fileName
+                    ];
                 } else {
                     $response->code = '02';
                     $response->desc = 'Has no File Uploaded.';

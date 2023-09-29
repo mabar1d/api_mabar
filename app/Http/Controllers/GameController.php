@@ -256,26 +256,23 @@ class GameController extends Controller
         try {
             $requestData = $request->all();
             $validator = Validator::make($requestData, [
-                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024',
-                'user_id' => 'required|numeric'
+                'image_file'  => 'mimes:jpeg,jpg,png,gif|required|max:1024'
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $gameId = isset($requestData['game_id']) ? trim($requestData['game_id']) : NULL;
             if (!$validator->fails()) {
                 if ($request->hasFile('image_file')) {
-                    $filenameQuestion = 'master_game_' . $gameId . '.jpg';
-                    $destinationPath = 'public/upload/masterGame/' . $gameId;
+                    $fileName = bin2hex(openssl_random_pseudo_bytes(10)) . '.jpg';
+                    $destinationPath = 'public/upload/masterGame/';
                     if (!file_exists(base_path($destinationPath))) {
                         mkdir(base_path($destinationPath), 0775, true);
                     }
-                    $request->file('image_file')->move(base_path($destinationPath . '/'), $filenameQuestion);
-                    MasterGame::find($gameId)
-                        ->update([
-                            "image" => $filenameQuestion
-                        ]);
+                    $request->file('image_file')->move(base_path($destinationPath . '/'), $fileName);
                     $response->code = '00';
                     $response->desc = 'File Has Uploaded.';
-                    DB::commit();
+                    $response->data = [
+                        'filename' => $fileName
+                    ];
                 } else {
                     $response->code = '02';
                     $response->desc = 'Has no File Uploaded.';
