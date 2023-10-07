@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Helpers\FcmFirebase;
 use App\Models\JobNotifFirebaseModel;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
