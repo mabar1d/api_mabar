@@ -20,6 +20,8 @@ $router->get('/', function () use ($router) {
     return "Welcome To The Jungle! Let's ROCK!!!!";
 });
 
+$router->get('sendNotification', 'ApkController@sendNotification');
+
 $router->group(['prefix' => 'api'], function ($router) {
     $router->post('checkTokenExpired', 'AuthController@checkTokenExpired');
     $router->post('logout', 'AuthController@logout');

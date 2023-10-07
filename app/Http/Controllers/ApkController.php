@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\FcmFirebase;
 use App\Models\ApkMenu;
 use App\Models\ApkMenuModel;
 use App\Models\ApkVersionModel;
+use App\Models\JobNotifFirebaseModel;
 use App\Models\LogApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +21,7 @@ class ApkController extends Controller
     {
         $token = $request->bearerToken();
         if ($token != env('GOD_BEARER')) {
-            $this->middleware('auth:api', ['except' => ['checkVersionApk', 'getListApkMenu']]);
+            $this->middleware('auth:api', ['except' => ['sendNotification', 'checkVersionApk', 'getListApkMenu']]);
         }
     }
 
@@ -107,5 +109,38 @@ class ApkController extends Controller
         }
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
+    }
+
+    public function sendNotification()
+    {
+        DB::beginTransaction();
+        try {
+            $count = 0;
+            $getListNotif = JobNotifFirebaseModel::getList(array(
+                "status" => 0,
+                "limit" => 1000
+            ));
+            foreach ($getListNotif as $rowListNotif) {
+                $keyClient = $rowListNotif["client_key"];
+                $titleFirebase = $rowListNotif["notif_title"];
+                $bodyFirebase = $rowListNotif["notif_body"];
+                $imgFirebase = $rowListNotif["notif_img_url"];
+                $urlFirebase = $rowListNotif["notif_url"];
+                $send = FcmFirebase::send($keyClient, $titleFirebase, $bodyFirebase, $imgFirebase, $urlFirebase);
+                if ($send->success == 1) {
+                    JobNotifFirebaseModel::find($rowListNotif["id"])->update([
+                        "status" => 1
+                    ]);
+                    $count++;
+                } else {
+                    JobNotifFirebaseModel::find($rowListNotif["id"])->update([
+                        "status" => 2
+                    ]);
+                }
+            }
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollback();
+        }
     }
 }
