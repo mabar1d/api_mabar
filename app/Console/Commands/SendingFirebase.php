@@ -60,6 +60,10 @@ class SendingFirebase extends Command
                         "status" => 1
                     ]);
                     $count++;
+                } else {
+                    JobNotifFirebaseModel::find($rowListNotif["id"])->update([
+                        "status" => 2
+                    ]);
                 }
             }
             DB::commit();
