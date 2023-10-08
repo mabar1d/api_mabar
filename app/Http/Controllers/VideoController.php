@@ -296,6 +296,7 @@ class VideoController extends Controller
                     $getInfo = [];
                     $videoCategoryName = isset($row->category) ? $row->category->name : null;
                     $videoTags = $row->pivotVideoTags->pluck("name", "id")->toArray();
+                    $createdByName = isset($row->user) ? $row->user->username : null;
                     $getInfo = [
                         "video_id" => $row->video_id,
                         "category_id" => $row->category_id,
@@ -309,7 +310,7 @@ class VideoController extends Controller
                         "notify" => $row->notify,
                         "status" => $row->status,
                         "created_by" => $row->created_by,
-                        "creator_name" => $row->created_by,
+                        "created_by_name" => $createdByName,
                         "created_at" => $row->created_at,
                         "diffCreatedAt" => $this->getDiffCreatedAt($row->created_at)
                     ];
@@ -359,6 +360,7 @@ class VideoController extends Controller
                 }
                 $videoCategoryName = isset($data->category) ? $data->category->name : null;
                 $videoTags = $data->pivotVideoTags->pluck("name", "id")->toArray();
+                $createdByName = isset($data->user) ? $data->user->username : null;
                 $getInfo = [
                     "video_id" => $data->video_id,
                     "category_id" => $data->category_id,
@@ -372,7 +374,7 @@ class VideoController extends Controller
                     "notify" => $data->notify,
                     "status" => $data->status,
                     "created_by" => $data->created_by,
-                    "creator_name" => $data->created_by,
+                    "created_by_name" => $createdByName,
                     "created_at" => $data->created_at,
                     "diffCreatedAt" => $this->getDiffCreatedAt($data->created_at)
                 ];

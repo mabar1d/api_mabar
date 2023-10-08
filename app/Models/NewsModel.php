@@ -57,6 +57,11 @@ class NewsModel extends Model
         return $this->hasOne(CategoryModel::class, 'id', 'news_category_id');
     }
 
+    public function user()
+    {
+        return $this->hasOne(User::class, 'id', 'created_by');
+    }
+
     public function pivotNewsTags()
     {
         return $this->belongsToMany(

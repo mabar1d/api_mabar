@@ -58,6 +58,11 @@ class VideoModel extends Model
         return $this->hasOne(CategoryModel::class, 'id', 'category_id');
     }
 
+    public function user()
+    {
+        return $this->hasOne(User::class, 'id', 'created_by');
+    }
+
     public function pivotVideoTags()
     {
         return $this->belongsToMany(

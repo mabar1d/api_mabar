@@ -302,26 +302,26 @@ class NewsController extends Controller
                 if (!$getList) {
                     throw new Exception("List News Empty!", 1);
                 }
-                foreach ($getList as $rowNews) {
-                    $newsCategoryName = isset($rowNews->newsCategory) ? $rowNews->newsCategory->name : NULL;
-                    $newsTags = $rowNews->pivotNewsTags->pluck("name", "id")->toArray();
-
+                foreach ($getList as $row) {
+                    $newsCategoryName = isset($row->newsCategory) ? $row->newsCategory->name : NULL;
+                    $newsTags = $row->pivotNewsTags->pluck("name", "id")->toArray();
+                    $createdByName = isset($row->user) ? $row->user->username : null;
                     $getInfo = [
-                        "id" => $rowNews->id,
-                        "news_category_id" => $rowNews->news_category_id,
+                        "id" => $row->id,
+                        "news_category_id" => $row->news_category_id,
                         "news_category_name" => $newsCategoryName,
-                        "title" => $rowNews->title,
-                        "slug" => $rowNews->slug,
-                        "link_share" => env("WEB_DOMAIN") . "/news/" . $rowNews["slug"],
-                        "content" => $rowNews->content,
-                        "image" => $rowNews->image,
-                        "news_image_url" => url("/upload/news/") . $rowNews["image"],
+                        "title" => $row->title,
+                        "slug" => $row->slug,
+                        "link_share" => env("WEB_DOMAIN") . "/news/" . $row["slug"],
+                        "content" => $row->content,
+                        "image" => $row->image,
+                        "news_image_url" => url("/upload/news/") . $row["image"],
                         "tag" => $newsTags,
-                        "status" => $rowNews->status,
-                        "created_by" => $rowNews->created_by,
-                        "created_at" => $rowNews->created_at,
-                        "creator_name" => $rowNews->created_by,
-                        "diffCreatedAt" => $this->getDiffCreatedAt($rowNews->created_at)
+                        "status" => $row->status,
+                        "created_by" => $row->created_by,
+                        "created_at" => $row->created_at,
+                        "created_by_name" => $createdByName,
+                        "diffCreatedAt" => $this->getDiffCreatedAt($row->created_at)
                     ];
                     $resultData[] = $getInfo;
                 }
@@ -369,6 +369,7 @@ class NewsController extends Controller
                 }
                 $newsCategoryName = isset($data->newsCategory) ? $data->newsCategory->name : NULL;
                 $newsTags = $data->pivotNewsTags->pluck("name", "id")->toArray();
+                $createdByName = isset($data->user) ? $data->user->username : null;
 
                 $getInfo = [
                     "id" => $data->id,
@@ -384,7 +385,7 @@ class NewsController extends Controller
                     "status" => $data->status,
                     "created_by" => $data->created_by,
                     "created_at" => $data->created_at,
-                    "creator_name" => $data->created_by,
+                    "created_by_name" => $createdByName,
                     "diffCreatedAt" => $this->getDiffCreatedAt($data->created_at)
                 ];
 
