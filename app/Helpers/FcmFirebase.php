@@ -16,7 +16,7 @@ class FcmFirebase
         );
 
         $fields = array(
-            'registration_ids' => $token,
+            'to' => $token,
             'notification' => $msg
         );
 
