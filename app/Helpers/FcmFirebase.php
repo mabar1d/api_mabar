@@ -12,6 +12,8 @@ class FcmFirebase
             'title' => $title,
             'body' => $body,
             'icon' => $icon,
+            'image' => $icon,
+            'picture' => $icon,
             'click_action' => $url
         );
 
