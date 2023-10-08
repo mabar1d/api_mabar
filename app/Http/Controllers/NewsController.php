@@ -389,7 +389,7 @@ class NewsController extends Controller
                     "diffCreatedAt" => $this->getDiffCreatedAt($data->created_at)
                 ];
 
-                $response->code = 00;
+                $response->code = "00";
                 $response->desc = 'Get Info News Success!';
                 $response->data = $getInfo;
                 DB::commit();
