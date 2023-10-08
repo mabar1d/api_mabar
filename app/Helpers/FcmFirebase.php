@@ -11,7 +11,7 @@ class FcmFirebase
         $msg = array(
             'title' => $title,
             'body' => $body,
-            'image' => $icon,
+            'icon' => $icon,
             'click_action' => $url
         );
 
