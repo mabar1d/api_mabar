@@ -46,10 +46,26 @@ class VideoModel extends Model
         return Carbon::parse($this->attributes['created_at'])
             ->format('d M Y H:i');
     }
+
     public function getUpdatedAtAttribute() //to show updated_at column
     {
         return Carbon::parse($this->attributes['updated_at'])
             ->format('d M Y H:i');
+    }
+
+    public function category()
+    {
+        return $this->hasOne(CategoryModel::class, 'id', 'category_id');
+    }
+
+    public function pivotVideoTags()
+    {
+        return $this->belongsToMany(
+            TagsModel::class,
+            ContentTagsModel::class,
+            'content_id',
+            'tag_id'
+        );
     }
 
     public static function countVideo($filter = NULL)

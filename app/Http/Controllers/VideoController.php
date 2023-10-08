@@ -280,43 +280,46 @@ class VideoController extends Controller
                 if ($page > 1) {
                     $offset = ($page - 1) * $limit;
                 }
-                $getList = VideoModel::getListVideoDetail(array(
-                    'status' => "1",
-                    'search' => $search,
-                    'offset' => $offset,
-                    'limit' => $limit
-                ));
-                if ($getList) {
-                    $resultData = array();
-                    foreach ($getList as $row) {
-                        if (isset($row['image']) && $row['image']) {
-                            $row['image'] = URL::to("/upload/video/" . $row['image']);
-                        }
-                        if (isset($row['link']) && $row['link']) {
-                            $row['link_youtube'] = env("WEB_YOUTUBE") . "/" . $row['link'];
-                        }
-
-                        $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
-                        $row['linkShare'] = env("WEB_DOMAIN") . "/video/" . $row["slug"];
-
-                        //start get Video tag
-                        $row['tag'] = array();
-                        $getNewsTag = VideoWithTagModel::getListJoinVideoTag(array("videoId" => (int) $row["video_id"]));
-                        foreach ($getNewsTag as $videoTag) {
-                            $row['tag'][] = $videoTag["name"];
-                        }
-                        //end get Video tag
-
-                        $resultData[] = $row;
-                    }
-                    $response->code = '00';
-                    $response->desc = 'Get List Video Success!';
-                    $response->data = $resultData;
-                    DB::commit();
-                } else {
-                    $response->code = '02';
-                    $response->desc = 'List Video is Empty.';
+                $getList = VideoModel::where("status", 1)
+                    ->offset($offset)
+                    ->limit($limit);
+                if (isset($search) && $search) {
+                    $getList = $getList->where("title", 'like', $search . '%');
                 }
+                $getList = $getList->get();
+                if (!$getList) {
+                    throw new Exception("Video List Is Empty!", 1);
+                }
+
+                $resultData = array();
+                foreach ($getList as $row) {
+                    $getInfo = [];
+                    $videoCategoryName = isset($row->category) ? $row->category->name : null;
+                    $videoTags = $row->pivotVideoTags->pluck("name", "id")->toArray();
+                    $getInfo = [
+                        "video_id" => $row->video_id,
+                        "category_id" => $row->category_id,
+                        "category_name" => $videoCategoryName,
+                        "title" => $row->title,
+                        "slug" => $row->slug,
+                        "content" => $row->content,
+                        "link" => env("WEB_YOUTUBE") . "/" . $row->link,
+                        "linkShare" => env("WEB_DOMAIN") . "/video/" . $row->slug,
+                        "tag" => $videoTags,
+                        "notify" => $row->notify,
+                        "status" => $row->status,
+                        "created_by" => $row->created_by,
+                        "creator_name" => $row->created_by,
+                        "created_at" => $row->created_at,
+                        "diffCreatedAt" => $this->getDiffCreatedAt($row->created_at)
+                    ];
+                    $resultData[] = $getInfo;
+                }
+
+                $response->code = '00';
+                $response->desc = 'Get List Video Success!';
+                $response->data = $resultData;
+                DB::commit();
             } else {
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
@@ -345,43 +348,45 @@ class VideoController extends Controller
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $videoId = isset($requestData['video_id']) ? trim($requestData['video_id']) : NULL;
-            $slug = isset($requestData['slug']) ? trim($requestData['slug']) : NULL;
+            $getInfo = array();
             if (!$validator->fails()) {
-                $getInfo = array();
-                if ($videoId || $slug) {
-                    $getInfo = VideoModel::getVideoDetail(array('id' => $videoId, 'slug' => $slug));
+                if (!$videoId) {
+                    throw new Exception("Video ID Is Empty!", 1);
                 }
-                if ($getInfo) {
-                    if (isset($getInfo['image']) && $getInfo['image']) {
-                        $getInfo['image'] = URL::to("/upload/video/" . $getInfo['image']);
-                    }
-                    if (isset($getInfo['link']) && $getInfo['link']) {
-                        $getInfo['link_youtube'] = env("WEB_YOUTUBE") . "/" . $getInfo['link'];
-                    }
-                    $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
-                    $getInfo['linkShare'] = env("WEB_DOMAIN") . "/video/" . $getInfo["slug"];
-                    //start get Video tag
-                    $getInfo['tag'] = array();
-                    $getNewsTag = VideoWithTagModel::getListJoinVideoTag(array("videoId" => (int) $getInfo["video_id"]));
-                    foreach ($getNewsTag as $videoTag) {
-                        $getInfo['tag'][] = $videoTag["name"];
-                    }
-                    //end get Video tag
-                    $response->code = '00';
-                    $response->desc = 'Get Info Video Success!';
-                    $response->data = $getInfo;
-                    DB::commit();
-                } else {
-                    $response->code = '02';
-                    $response->desc = 'Video Not Found.';
+                $data = VideoModel::find($videoId);
+                if (!$data) {
+                    throw new Exception("Video Not Found!", 1);
                 }
+                $videoCategoryName = isset($data->category) ? $data->category->name : null;
+                $videoTags = $data->pivotVideoTags->pluck("name", "id")->toArray();
+                $getInfo = [
+                    "video_id" => $data->video_id,
+                    "category_id" => $data->category_id,
+                    "category_name" => $videoCategoryName,
+                    "title" => $data->title,
+                    "slug" => $data->slug,
+                    "content" => $data->content,
+                    "link" => env("WEB_YOUTUBE") . "/" . $data->link,
+                    "linkShare" => env("WEB_DOMAIN") . "/video/" . $data->slug,
+                    "tag" => $videoTags,
+                    "notify" => $data->notify,
+                    "status" => $data->status,
+                    "created_by" => $data->created_by,
+                    "creator_name" => $data->created_by,
+                    "created_at" => $data->created_at,
+                    "diffCreatedAt" => $this->getDiffCreatedAt($data->created_at)
+                ];
+                $response->code = '00';
+                $response->desc = 'Get Info Video Success!';
+                $response->data = $getInfo;
+                DB::commit();
             } else {
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
         } catch (Exception $e) {
             DB::rollback();
-            $response->code = '99';
+            $response->code = $e->getCode();
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));

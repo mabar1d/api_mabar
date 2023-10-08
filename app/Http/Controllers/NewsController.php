@@ -291,34 +291,6 @@ class NewsController extends Controller
                 if ($page > 1) {
                     $offset = ($page - 1) * $limit;
                 }
-                // $getList = NewsModel::getListNewsDetail(array(
-                //     'status' => "1",
-                //     'search' => $search,
-                //     'offset' => $offset,
-                //     'limit' => $limit
-                // ));
-                // $getInfo = array();
-                // $resultData = array();
-
-                // // if ($getList) {
-                // foreach ($getList as $row) {
-                //     if ($row['image']) {
-                //         $row['image'] = URL::to("/upload/news/" . $row['image']);
-                //     }
-                //     $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
-                //     $row['linkShare'] = env("WEB_DOMAIN") . "/news/" . $row["slug"];
-
-                //     //start get news tag
-                //     $getInfo['tag'] = array();
-                //     $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $row["id"]));
-                //     foreach ($getNewsTag as $newsTag) {
-                //         $row['tag'][] = $newsTag["name"];
-                //     }
-                //     //end get news tag
-
-                //     $resultData[] = $row;
-                // }
-
                 $resultData = array();
                 $getList = NewsModel::where("status", 1)
                     ->offset($offset)
@@ -348,6 +320,7 @@ class NewsController extends Controller
                         "status" => $rowNews->status,
                         "created_by" => $rowNews->created_by,
                         "created_at" => $rowNews->created_at,
+                        "creator_name" => $rowNews->created_by,
                         "diffCreatedAt" => $this->getDiffCreatedAt($rowNews->created_at)
                     ];
                     $resultData[] = $getInfo;
@@ -385,38 +358,40 @@ class NewsController extends Controller
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $newsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
+            $getInfo = array();
             if (!$validator->fails()) {
-                $getInfo = array();
-                if ($newsId) {
-                    $data = NewsModel::find($newsId);
-                    if (!$data) {
-                        throw new Exception("News Not Found!", 1);
-                    }
-                    $newsCategoryName = isset($data->newsCategory) ? $data->newsCategory->name : NULL;
-                    $newsTags = $data->pivotNewsTags->pluck("name", "id")->toArray();
-
-                    $getInfo = [
-                        "id" => $data->id,
-                        "news_category_id" => $data->news_category_id,
-                        "news_category_name" => $newsCategoryName,
-                        "title" => $data->title,
-                        "slug" => $data->slug,
-                        "link_share" => env("WEB_DOMAIN") . "/news/" . $data["slug"],
-                        "content" => $data->content,
-                        "image" => $data->image,
-                        "news_image_url" => url("/upload/news/") . $data["image"],
-                        "tag" => $newsTags,
-                        "status" => $data->status,
-                        "created_by" => $data->created_by,
-                        "created_at" => $data->created_at,
-                        "diffCreatedAt" => $this->getDiffCreatedAt($data->created_at)
-                    ];
-
-                    $response->code = 00;
-                    $response->desc = 'Get Info News Success!';
-                    $response->data = $getInfo;
-                    DB::commit();
+                if (!$newsId) {
+                    throw new Exception("News ID Is Empty!", 1);
                 }
+                $data = NewsModel::find($newsId);
+                if (!$data) {
+                    throw new Exception("News Not Found!", 1);
+                }
+                $newsCategoryName = isset($data->newsCategory) ? $data->newsCategory->name : NULL;
+                $newsTags = $data->pivotNewsTags->pluck("name", "id")->toArray();
+
+                $getInfo = [
+                    "id" => $data->id,
+                    "news_category_id" => $data->news_category_id,
+                    "news_category_name" => $newsCategoryName,
+                    "title" => $data->title,
+                    "slug" => $data->slug,
+                    "link_share" => env("WEB_DOMAIN") . "/news/" . $data["slug"],
+                    "content" => $data->content,
+                    "image" => $data->image,
+                    "news_image_url" => url("/upload/news/") . $data["image"],
+                    "tag" => $newsTags,
+                    "status" => $data->status,
+                    "created_by" => $data->created_by,
+                    "created_at" => $data->created_at,
+                    "creator_name" => $data->created_by,
+                    "diffCreatedAt" => $this->getDiffCreatedAt($data->created_at)
+                ];
+
+                $response->code = 00;
+                $response->desc = 'Get Info News Success!';
+                $response->data = $getInfo;
+                DB::commit();
             } else {
                 throw new Exception($validator->errors()->first(), 1);
             }
