@@ -11,14 +11,13 @@ class FcmFirebase
         $msg = array(
             'body'  => $body,
             'title' => $title,
-            // 'receiver' => 'erw',
-            'icon'  => $icon,
+            'image'  => $icon,
             'click_action' => $url
         );
 
         $fields = array(
-            'to'        => $token,
-            'notification'  => $msg
+            'to' => $token,
+            'notification' => $msg
         );
 
         $headers = array(
