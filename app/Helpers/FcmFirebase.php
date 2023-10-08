@@ -9,8 +9,8 @@ class FcmFirebase
         $token = $to;
         $from = env("SERVER_FCM_KEY");
         $msg = array(
-            'body' => $body,
             'title' => $title,
+            'body' => $body,
             'image' => $icon,
             'click_action' => $url
         );
