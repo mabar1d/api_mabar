@@ -9,14 +9,14 @@ class FcmFirebase
         $token = $to;
         $from = env("SERVER_FCM_KEY");
         $msg = array(
-            'body'  => $body,
+            'body' => $body,
             'title' => $title,
-            'image'  => $icon,
+            'image' => $icon,
             'click_action' => $url
         );
 
         $fields = array(
-            'to' => $token,
+            'registration_ids' => $token,
             'notification' => $msg
         );
 
