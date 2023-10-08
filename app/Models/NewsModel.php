@@ -45,10 +45,26 @@ class NewsModel extends Model
         return Carbon::parse($this->attributes['created_at'])
             ->format('d M Y H:i');
     }
+
     public function getUpdatedAtAttribute() //to show updated_at column
     {
         return Carbon::parse($this->attributes['updated_at'])
             ->format('d M Y H:i');
+    }
+
+    public function newsCategory()
+    {
+        return $this->hasOne(CategoryModel::class, 'id', 'news_category_id');
+    }
+
+    public function pivotNewsTags()
+    {
+        return $this->belongsToMany(
+            TagsModel::class,
+            ContentTagsModel::class,
+            'content_id',
+            'tag_id'
+        );
     }
 
     public static function countNews($filter = NULL)

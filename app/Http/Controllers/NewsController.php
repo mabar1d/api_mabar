@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Helpers\FcmFirebase;
 use App\Models\LogApi;
 use Illuminate\Http\Request;
-use App\Models\MasterGame;
 use App\Models\NewsCategoryModel;
 use App\Models\NewsModel;
 use App\Models\TagModel;
@@ -292,39 +291,72 @@ class NewsController extends Controller
                 if ($page > 1) {
                     $offset = ($page - 1) * $limit;
                 }
-                $getList = NewsModel::getListNewsDetail(array(
-                    'status' => "1",
-                    'search' => $search,
-                    'offset' => $offset,
-                    'limit' => $limit
-                ));
-                // if ($getList) {
+                // $getList = NewsModel::getListNewsDetail(array(
+                //     'status' => "1",
+                //     'search' => $search,
+                //     'offset' => $offset,
+                //     'limit' => $limit
+                // ));
+                // $getInfo = array();
+                // $resultData = array();
+
+                // // if ($getList) {
+                // foreach ($getList as $row) {
+                //     if ($row['image']) {
+                //         $row['image'] = URL::to("/upload/news/" . $row['image']);
+                //     }
+                //     $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
+                //     $row['linkShare'] = env("WEB_DOMAIN") . "/news/" . $row["slug"];
+
+                //     //start get news tag
+                //     $getInfo['tag'] = array();
+                //     $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $row["id"]));
+                //     foreach ($getNewsTag as $newsTag) {
+                //         $row['tag'][] = $newsTag["name"];
+                //     }
+                //     //end get news tag
+
+                //     $resultData[] = $row;
+                // }
+
                 $resultData = array();
-                foreach ($getList as $row) {
-                    if ($row['image']) {
-                        $row['image'] = URL::to("/upload/news/" . $row['image']);
-                    }
-                    $row['diffCreatedAt'] = $this->getDiffCreatedAt($row['created_at']);
-                    $row['linkShare'] = env("WEB_DOMAIN") . "/news/" . $row["slug"];
-
-                    //start get news tag
-                    $getInfo['tag'] = array();
-                    $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $row["id"]));
-                    foreach ($getNewsTag as $newsTag) {
-                        $row['tag'][] = $newsTag["name"];
-                    }
-                    //end get news tag
-
-                    $resultData[] = $row;
+                $getList = NewsModel::where("status", 1)
+                    ->offset($offset)
+                    ->limit($limit);
+                if (isset($search) && $search) {
+                    $getList = $getList->where("title", 'like', $search . '%');
                 }
+                $getList = $getList->get();
+                if (!$getList) {
+                    throw new Exception("List News Empty!", 1);
+                }
+                foreach ($getList as $rowNews) {
+                    $newsCategoryName = isset($rowNews->newsCategory) ? $rowNews->newsCategory->name : NULL;
+                    $newsTags = $rowNews->pivotNewsTags->pluck("name", "id")->toArray();
+
+                    $getInfo = [
+                        "id" => $rowNews->id,
+                        "news_category_id" => $rowNews->news_category_id,
+                        "news_category_name" => $newsCategoryName,
+                        "title" => $rowNews->title,
+                        "slug" => $rowNews->slug,
+                        "link_share" => env("WEB_DOMAIN") . "/news/" . $rowNews["slug"],
+                        "content" => $rowNews->content,
+                        "image" => $rowNews->image,
+                        "news_image_url" => url("/upload/news/") . $rowNews["image"],
+                        "tag" => $newsTags,
+                        "status" => $rowNews->status,
+                        "created_by" => $rowNews->created_by,
+                        "created_at" => $rowNews->created_at,
+                        "diffCreatedAt" => $this->getDiffCreatedAt($rowNews->created_at)
+                    ];
+                    $resultData[] = $getInfo;
+                }
+
                 $response->code = '00';
                 $response->desc = 'Get List News Success!';
                 $response->data = $resultData;
                 DB::commit();
-                // } else {
-                //     $response->code = '02';
-                //     $response->desc = 'List News is Empty.';
-                // }
             } else {
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
@@ -353,41 +385,45 @@ class NewsController extends Controller
             ]);
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
             $newsId = isset($requestData['news_id']) ? trim($requestData['news_id']) : NULL;
-            $slug = isset($requestData['slug']) ? trim($requestData['slug']) : NULL;
             if (!$validator->fails()) {
                 $getInfo = array();
-                if ($newsId || $slug) {
-                    $getInfo = NewsModel::getNewsDetail(array('id' => $newsId, 'slug' => $slug));
-                }
-                if ($getInfo) {
-                    if ($getInfo['image']) {
-                        $getInfo['image'] = URL::to("/upload/news/" . $getInfo['image']);
+                if ($newsId) {
+                    $data = NewsModel::find($newsId);
+                    if (!$data) {
+                        throw new Exception("News Not Found!", 1);
                     }
-                    $getInfo['diffCreatedAt'] = $this->getDiffCreatedAt($getInfo['created_at']);
-                    $getInfo['linkShare'] = env("WEB_DOMAIN") . "/news/" . $getInfo["slug"];
-                    //start get news tag
-                    $getInfo['tag'] = array();
-                    $getNewsTag = NewsWithTagModel::getListJoinNewsTag(array("newsId" => (int) $getInfo["id"]));
-                    foreach ($getNewsTag as $newsTag) {
-                        $getInfo['tag'][] = $newsTag["name"];
-                    }
-                    //end get news tag
-                    $response->code = '00';
+                    $newsCategoryName = isset($data->newsCategory) ? $data->newsCategory->name : NULL;
+                    $newsTags = $data->pivotNewsTags->pluck("name", "id")->toArray();
+
+                    $getInfo = [
+                        "id" => $data->id,
+                        "news_category_id" => $data->news_category_id,
+                        "news_category_name" => $newsCategoryName,
+                        "title" => $data->title,
+                        "slug" => $data->slug,
+                        "link_share" => env("WEB_DOMAIN") . "/news/" . $data["slug"],
+                        "content" => $data->content,
+                        "image" => $data->image,
+                        "news_image_url" => url("/upload/news/") . $data["image"],
+                        "tag" => $newsTags,
+                        "status" => $data->status,
+                        "created_by" => $data->created_by,
+                        "created_at" => $data->created_at,
+                        "diffCreatedAt" => $this->getDiffCreatedAt($data->created_at)
+                    ];
+
+                    $response->code = 00;
                     $response->desc = 'Get Info News Success!';
                     $response->data = $getInfo;
                     DB::commit();
-                } else {
-                    $response->code = '02';
-                    $response->desc = 'News Not Found.';
                 }
             } else {
-                $response->code = '01';
-                $response->desc = $validator->errors()->first();
+                throw new Exception($validator->errors()->first(), 1);
             }
         } catch (Exception $e) {
             DB::rollback();
-            $response->code = '99';
-            $response->desc = 'Caught exception: ' .  $e->getMessage();
+            $response->code = $e->getCode();
+            $response->desc = $e->getMessage();
         }
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
         return response()->json($response);
