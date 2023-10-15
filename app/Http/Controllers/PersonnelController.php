@@ -40,7 +40,7 @@ class PersonnelController extends Controller
             ]);
             $userId = trim($requestData['user_id']);
             if (!$validator->fails()) {
-                $query = Personnel::select('users.username', 'users.email', 'personnel.*', 'm_gender.gender')
+                $query = Personnel::select('users.token_firebase', 'users.username', 'users.email', 'personnel.*', 'm_gender.gender')
                     ->leftJoin('m_gender', 'personnel.gender_id', '=', 'm_gender.gender_id')
                     ->leftJoin('users', 'personnel.user_id', '=', 'users.id')
                     ->where('personnel.user_id', $userId);
