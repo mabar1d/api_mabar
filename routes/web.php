@@ -123,6 +123,9 @@ $router->group(['prefix' => 'api'], function ($router) {
     // $router->post('getListMasterGame', 'GameController@getList');
     $router->post('getInfoGeneral', 'GeneralController@getInfo');
 
+    //CHAT
+    $router->post('postTournamentChat', 'ChatController@postTournamentChat');
+
     //CALLBACK MIDTRANS
     $router->post('callbackMidtransNotification/charge', 'CallbackMidtransController@index');
     $router->post('callbackMidtrans/handle', 'CallbackMidtransController@handle');
