@@ -286,9 +286,11 @@ class VideoController extends Controller
                 if (isset($search) && $search) {
                     $getList = $getList->where("title", 'like', $search . '%');
                 }
+                $getList->orderBy("created_at", "DESC");
                 if ($getList->count() == 0) {
                     throw new Exception("Video List Is Empty!", 1);
                 }
+
                 $getList = $getList->get();
 
                 $resultData = array();

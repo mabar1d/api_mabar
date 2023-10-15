@@ -298,6 +298,7 @@ class NewsController extends Controller
                 if (isset($search) && $search) {
                     $getList = $getList->where("title", 'like', $search . '%');
                 }
+                $getList->orderBy("created_at", "DESC");
                 if ($getList->count() == 0) {
                     throw new Exception("List News Empty!", 1);
                 }
