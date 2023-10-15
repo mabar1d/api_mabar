@@ -337,7 +337,7 @@ class NewsController extends Controller
             }
         } catch (Exception $e) {
             DB::rollback();
-            $response->code = $e->getCode();
+            $response->code = strval($e->getCode());
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
