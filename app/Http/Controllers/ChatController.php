@@ -99,7 +99,7 @@ class ChatController extends Controller
                     JobNotifFirebaseModel::create([
                         'notif_type' => 'notif_tournament',
                         'client_key' => isset($getPersonnel["token_firebase"]) && $getPersonnel["token_firebase"] ? $getPersonnel["token_firebase"] : NULL,
-                        'notif_title' => 'Tournament Notification',
+                        'notif_title' => 'Tournament Message',
                         'notif_body' => json_encode($notifBody),
                         'notif_img_url' => NULL,
                         'notif_url' => $actionUrl,
