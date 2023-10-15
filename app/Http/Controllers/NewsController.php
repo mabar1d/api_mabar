@@ -298,10 +298,11 @@ class NewsController extends Controller
                 if (isset($search) && $search) {
                     $getList = $getList->where("title", 'like', $search . '%');
                 }
-                $getList = $getList->get();
-                if (!$getList || empty($getList)) {
+                if ($getList->count() == 0) {
                     throw new Exception("List News Empty!", 1);
                 }
+                $getList = $getList->get();
+
                 foreach ($getList as $row) {
                     $newsCategoryName = isset($row->newsCategory) ? $row->newsCategory->name : NULL;
                     $newsTags = $row->pivotNewsTags->pluck("name", "id")->toArray();
@@ -336,7 +337,7 @@ class NewsController extends Controller
             }
         } catch (Exception $e) {
             DB::rollback();
-            $response->code = '99';
+            $response->code = $e->getCode();
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));

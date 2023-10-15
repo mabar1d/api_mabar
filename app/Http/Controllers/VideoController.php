@@ -286,10 +286,10 @@ class VideoController extends Controller
                 if (isset($search) && $search) {
                     $getList = $getList->where("title", 'like', $search . '%');
                 }
-                $getList = $getList->get();
-                if (!$getList || empty($getList)) {
+                if ($getList->count() == 0) {
                     throw new Exception("Video List Is Empty!", 1);
                 }
+                $getList = $getList->get();
 
                 $resultData = array();
                 foreach ($getList as $row) {
@@ -327,7 +327,7 @@ class VideoController extends Controller
             }
         } catch (Exception $e) {
             DB::rollback();
-            $response->code = '99';
+            $response->code = $e->getCode();
             $response->desc = 'Caught exception: ' .  $e->getMessage();
         }
         LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
