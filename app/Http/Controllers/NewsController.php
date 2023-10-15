@@ -299,7 +299,7 @@ class NewsController extends Controller
                     $getList = $getList->where("title", 'like', $search . '%');
                 }
                 $getList = $getList->get();
-                if (!$getList) {
+                if (!$getList || empty($getList)) {
                     throw new Exception("List News Empty!", 1);
                 }
                 foreach ($getList as $row) {

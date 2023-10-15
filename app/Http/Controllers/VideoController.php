@@ -287,7 +287,7 @@ class VideoController extends Controller
                     $getList = $getList->where("title", 'like', $search . '%');
                 }
                 $getList = $getList->get();
-                if (!$getList) {
+                if (!$getList || empty($getList)) {
                     throw new Exception("Video List Is Empty!", 1);
                 }
 
