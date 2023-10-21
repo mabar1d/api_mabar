@@ -23,7 +23,7 @@ class NewsController extends Controller
     {
         $token = $request->bearerToken();
         if ($token != env('GOD_BEARER')) {
-            $this->middleware('auth:api', ['except' => ['getList', 'getInfo']]);
+            $this->middleware('auth:api', ['except' => ['getList', 'getInfo', 'count']]);
         }
     }
 
@@ -278,27 +278,36 @@ class NewsController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($requestData, [
-                'user_id' => 'string',
+                'user_id' => 'required|string',
                 'search' => 'string',
-                'page' => 'numeric'
+                'page' => 'numeric',
+                'order_by' => 'string',
+                'order_by_method' => 'string',
+                'limit' => 'numeric',
+                'offset' => 'numeric',
+                'status' => 'string'
             ]);
-            $search = isset($requestData['search']) && $requestData['search'] ? trim($requestData['search']) : NULL;
-            $page = !empty($requestData['page']) ? trim($requestData['page']) : 0;
             $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $search = trim($requestData['search']);
+            $page = !empty($requestData['page']) && $requestData['page'] ? trim($requestData['page']) : 0;
+            $orderBy = isset($requestData['order_by']) && $requestData['order_by'] ? trim($requestData['order_by']) : "created_at";
+            $orderByMethod = isset($requestData['order_by_method']) && $requestData['order_by_method'] ? trim($requestData['order_by_method']) : "desc";
+            $limit = isset($requestData['limit']) && $requestData['limit'] ? trim($requestData['limit']) : 20;
+            $offset = isset($requestData['offset']) && $requestData['offset'] ? trim($requestData['offset']) : 0;
+            $status = isset($requestData['status']) && $requestData['status'] ? trim($requestData['status']) : 1;
             if (!$validator->fails()) {
-                $offset = 0;
-                $limit = 20;
                 if ($page > 1) {
                     $offset = ($page - 1) * $limit;
                 }
                 $resultData = array();
-                $getList = NewsModel::where("status", 1)
+                $getList = NewsModel::select('*')
+                    ->where("status", $status)
                     ->offset($offset)
                     ->limit($limit);
-                if (isset($search) && $search) {
-                    $getList = $getList->where("title", 'like', $search . '%');
+                if ($search) {
+                    $getList->where('title', 'like', $search . '%');
                 }
-                $getList->orderBy("created_at", "DESC");
+                $getList->orderBy($orderBy, $orderByMethod);
                 if ($getList->count() == 0) {
                     throw new Exception("List News Empty!", 1);
                 }
@@ -505,6 +514,43 @@ class NewsController extends Controller
                 $response->code = '01';
                 $response->desc = $validator->errors()->first();
             }
+        } catch (Exception $e) {
+            DB::rollback();
+            $response->code = '99';
+            $response->desc = 'Caught exception: ' .  $e->getMessage();
+        }
+        LogApi::createLog($userId, $request->path(), json_encode($requestData), json_encode($response));
+        return response()->json($response);
+    }
+
+    public function count(Request $request)
+    {
+        $response = new stdClass();
+        $response->code = '';
+        $response->desc = '';
+        $requestData = $request->input();
+        DB::beginTransaction();
+        try {
+            $validator = Validator::make($requestData, [
+                'user_id' => 'required|string',
+                'status' => 'string'
+            ]);
+            $userId = isset($requestData['user_id']) ? trim($requestData['user_id']) : NULL;
+            $status = isset($requestData['status']) && $requestData['status'] ? trim($requestData['status']) : 1;
+            if (!$validator->fails()) {
+                $query = NewsModel::where("status", $status);
+                $execQuery = $query->count();
+
+                $response->code = '00';
+                $response->desc = 'Count News Success!';
+                $response->data = [
+                    "totalCount" => $execQuery
+                ];
+            } else {
+                $response->code = '01';
+                $response->desc = $validator->errors()->first();
+            }
+            DB::commit();
         } catch (Exception $e) {
             DB::rollback();
             $response->code = '99';
