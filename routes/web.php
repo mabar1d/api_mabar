@@ -92,6 +92,7 @@ $router->group(['prefix' => 'api'], function ($router) {
     $router->post('getListMasterGame', 'GameController@getList');
     $router->post('getInfoMasterGame', 'GameController@getInfo');
     $router->post('uploadImageGame', 'GameController@uploadImage');
+    $router->post('countMasterGame', 'GameController@count');
 
     //NEWS CATEGORY
     $router->post('createNewsCategory', 'NewsCategoryController@create');
